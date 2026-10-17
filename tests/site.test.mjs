@@ -52,8 +52,10 @@ test("notebook decorations, coherent cards, portrait and contact shortcut are ac
   assert.match(css, /\.pen-rail\s*\{[^}]*background:\s*transparent/);
   assert.match(css, /\.pen-rail\s*\{[^}]*z-index:\s*20/);
   assert.match(css, /font-family:\s*"Patrick Hand"/);
-  assert.match(css, /--note-green:\s*#d9ee95/i);
-  assert.match(css, /\[data-card\]\s*\{[^}]*transform-origin:\s*50% 0/);
+  for (const tone of ["yellow", "pink", "blue"]) assert.match(css, new RegExp(`--note-${tone}:\\s*#`));
+  assert.doesNotMatch(css, /--note-green/);
+  assert.match(css, /\[data-card\]\s*\{[^}]*transform-origin:\s*0 50%/);
+  assert.match(css, /@keyframes page-curl/);
   assert.match(css, /@keyframes pin-press/);
   assert.match(css, /\[data-motion-state="entering"\][^]*?\.note-pin/);
   assert.match(css, /\.note-pin\s*\{[^}]*pointer-events:\s*none/);

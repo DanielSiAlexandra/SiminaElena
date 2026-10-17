@@ -18,13 +18,12 @@
   color-scheme: light;
   --paper: #f7f4ec;
   --page: #e7e9df;
-  --note-green: #d9ee95;
-  --note-green-light: #e5f4b3;
-  --note-green-deep: #cbe37a;
-  --note-curl: #c4d977;
-  --pin-forest: #2f6b52;
-  --pin-ochre: #d29a2a;
-  --pin-red: #cf3a2e;
+  --note-yellow: #fbefa7;
+  --note-pink: #f8d5dc;
+  --note-blue: #d2e7f4;
+  --pin-sage: #78967b;
+  --pin-ochre: #b18733;
+  --pin-clay: #a26855;
   --ink: #233e34;
   --green: #244c40;
   --light: #fcfaf4;
@@ -150,13 +149,15 @@ nav a { text-decoration: none; }
 nav a:hover { text-decoration: underline; }
 main { max-width: 1560px; margin-inline: auto; padding-bottom: 40px; }
 .note-art { position: absolute; pointer-events: none; }
-/* Sticky notes: the paper and its curl shadow are pseudo-layers so text stays crisp while the note flips. */ /* taste-skill-ignore: Requested sticky-note/pin realism. */
+/* Sticky notes: the paper and its curl shadow are pseudo-layers so text stays crisp while the page turns. */ /* taste-skill-ignore: Requested sticky-note/pin realism. */
 [data-card] {
-  --note: var(--note-green);
+  --note: var(--note-yellow);
+  --curl: color-mix(in srgb, var(--note) 78%, #233e34);
+  --underside: color-mix(in srgb, var(--note) 45%, #fff);
   position: relative;
   isolation: isolate;
   color: var(--ink);
-  transform-origin: 50% 0;
+  transform-origin: 0 50%;
   rotate: var(--tilt, 0deg);
   backface-visibility: hidden;
 }
@@ -168,7 +169,8 @@ main { max-width: 1560px; margin-inline: auto; padding-bottom: 40px; }
   /* Lower-right corner is cut away; the folded underside is painted back in as the curl. */
   clip-path: polygon(0 0, 100% 0, 100% calc(100% - 52px), calc(100% - 52px) 100%, 0 100%);
   background:
-    linear-gradient(to top left, transparent 50%, var(--note-curl) 50%, #f6fbdf 100%) right bottom / 52px 52px no-repeat, /* taste-skill-ignore: Sticky-note reference. */
+    linear-gradient(to right, transparent 36%, #233e3426 47%, #ffffff73 53%, transparent 64%) 0 0 / 300% 100% no-repeat, /* taste-skill-ignore: Page-curl shading band. */
+    linear-gradient(to top left, transparent 50%, var(--curl) 50%, var(--underside) 100%) right bottom / 52px 52px no-repeat, /* taste-skill-ignore: Sticky-note reference. */
     linear-gradient(to bottom, #ffffff52 0 40px, #233e3414 40px 41px, transparent 41px), /* taste-skill-ignore: Sticky-note reference. */
     linear-gradient(170deg, #ffffff40, transparent 50%), /* taste-skill-ignore: Sticky-note reference. */
     var(--note); /* taste-skill-ignore: Curl, adhesive band and paper sheen of the requested sticky-note reference. */
@@ -182,21 +184,28 @@ main { max-width: 1560px; margin-inline: auto; padding-bottom: 40px; }
   box-shadow: 0 1px 2px #233e3426, 0 12px 16px -12px #233e3459; /* taste-skill-ignore: Lifted sticky note. */
   pointer-events: none;
 }
+/* While turning, a light/shadow band sweeps across the paper so it reads as a curling page, not a rigid board. */ /* taste-skill-ignore: Page-curl shading. */
+[data-motion-state="entering"]::before { animation: page-curl 1000ms cubic-bezier(0.3, 0.6, 0.35, 1) both; }
+[data-motion-state="exiting"]::before { animation: page-curl 750ms cubic-bezier(0.55, 0, 0.8, 0.45) reverse both; }
+@keyframes page-curl {
+  from { background-position: 0 0, right bottom, 0 0, 0 0, 0 0; }
+  to { background-position: 100% 0, right bottom, 0 0, 0 0, 0 0; }
+}
 .note-pin {
   position: absolute;
   z-index: 1;
-  top: 4px;
-  left: calc(50% - 25px);
-  width: 50px;
-  height: 60px;
-  color: var(--pin-forest);
+  top: 9px;
+  left: calc(50% - 20px);
+  width: 40px;
+  height: 48px;
+  color: var(--pin-sage);
   pointer-events: none;
   transform: rotate(-12deg);
   transform-origin: 52% 92%;
   filter: drop-shadow(2px 3px 1px #233e3440); /* taste-skill-ignore: User-requested raised pushpin. */
 }
 [data-pin-tone="ochre"] > .note-pin { color: var(--pin-ochre); }
-[data-pin-tone="red"] > .note-pin { color: var(--pin-red); }
+[data-pin-tone="clay"] > .note-pin { color: var(--pin-clay); }
 [data-motion-state="entering"] > .note-pin,
 [data-motion-state="exiting"] > .note-pin,
 [data-motion-state="outside"] > .note-pin { opacity: 0; }
@@ -217,7 +226,7 @@ main { max-width: 1560px; margin-inline: auto; padding-bottom: 40px; }
   justify-content: center;
   padding: 76px 44px 64px;
   text-align: center;
-  --note: var(--note-green-light);
+  --note: var(--note-yellow);
   --tilt: -0.8deg;
 }
 h1 { font-size: clamp(3.4rem, 6.5vw, 5.5rem); }
@@ -250,6 +259,7 @@ h1 { font-size: clamp(3.4rem, 6.5vw, 5.5rem); }
   justify-content: center;
   gap: 32px;
   padding: 76px 24px 48px;
+  --note: var(--note-pink);
   --tilt: 1deg;
 }
 .hero-picture .portrait {
@@ -267,7 +277,7 @@ h1 { font-size: clamp(3.4rem, 6.5vw, 5.5rem); }
 }
 .hero-picture figcaption span { display: block; font-size: 2rem; line-height: 1.2; margin-bottom: 20px; }
 .section-space { padding: 88px 7% 72px; margin: 36px 24px 0; }
-.about { display: grid; grid-template-columns: 1fr 1.25fr; gap: 9%; --note: var(--note-green-light); --tilt: 0.3deg; }
+.about { display: grid; grid-template-columns: 1fr 1.25fr; gap: 9%; --note: var(--note-blue); --tilt: 0.3deg; }
 .section-intro p { margin-top: 26px; max-width: 29ch; }
 .letter { max-width: 55ch; }
 .lead { font-size: 1.25rem; line-height: 1.55; }
@@ -285,12 +295,12 @@ h1 { font-size: clamp(3.4rem, 6.5vw, 5.5rem); }
 .lesson-slip li::marker { color: var(--muted); }
 .lesson-slip li p { margin-top: 10px; font-size: 0.95rem; }
 .slip-note { margin-top: 30px; font-style: italic; font-size: 0.9rem; }
-.questions { display: grid; grid-template-columns: 1fr 1.25fr; gap: 9%; --tilt: 0.4deg; }
+.questions { display: grid; grid-template-columns: 1fr 1.25fr; gap: 9%; --note: var(--note-pink); --tilt: 0.4deg; }
 details + details { margin-top: 16px; }
 details { padding: 16px 20px; background: #ffffff8c; }
 summary { cursor: pointer; font-weight: 700; min-height: 44px; align-content: center; }
 details p { margin-top: 18px; }
-.contact { display: grid; grid-template-columns: 1.1fr 1fr; gap: 10%; --note: var(--note-green-deep); --tilt: -0.5deg; align-items: center; }
+.contact { display: grid; grid-template-columns: 1.1fr 1fr; gap: 10%; --note: var(--note-blue); --tilt: -0.5deg; align-items: center; }
 .contact h2 { font-size: clamp(2.4rem, 5.6vw, 4.4rem); }
 .contact-copy > p { max-width: 34ch; }
 .button-light { margin-top: 30px; }

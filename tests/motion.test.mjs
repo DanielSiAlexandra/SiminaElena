@@ -2,8 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { createCardMotion } from "../site/motion.js";
 
-const folded = { transform: "perspective(2000px) rotateX(-88deg)", opacity: 0 };
-const flat = { transform: "perspective(2000px) rotateX(0deg)", opacity: 1 };
+const folded = { transform: "perspective(1800px) rotateY(84deg) skewY(-8deg)", opacity: 0 };
+const flat = { transform: "perspective(1800px) rotateY(0deg) skewY(0deg)", opacity: 1 };
 
 function fixture({ narrow = false, focused = false, random = () => 0.5 } = {}) {
   const animations = [];
@@ -38,7 +38,7 @@ function fixture({ narrow = false, focused = false, random = () => 0.5 } = {}) {
 }
 
 test("pushpins select only curated colours once, remaining stable across motion restarts", () => {
-  for (const [value, expected] of [[0, "forest"], [0.34, "ochre"], [0.99, "red"]]) {
+  for (const [value, expected] of [[0, "sage"], [0.34, "ochre"], [0.99, "clay"]]) {
     let calls = 0;
     const f = fixture({ random: () => { calls++; return value; } });
     assert.equal(f.element.dataset.pinTone, expected);
@@ -62,9 +62,10 @@ test("edge trigger has hysteresis and ignores the card's animated appearance", (
   f.move(810);
   assert.equal(f.element.dataset.motionState, "entering");
   const entry = f.animations[0];
-  assert.deepEqual(entry.frames[0], folded, "Notes flip down from their top edge");
+  assert.deepEqual(entry.frames[0], folded, "Notes turn in like a page hinged at the spiral");
   assert.deepEqual(entry.frames.at(-1), flat);
-  assert.ok(entry.frames.some(frame => /rotateX\([1-9]/.test(frame.transform ?? "")), "Paper settles past flat before landing");
+  assert.ok(entry.frames.some(frame => /rotateY\(-[1-9]/.test(frame.transform ?? "")), "Page settles past flat before landing");
+  assert.ok(entry.frames.slice(1, -1).every(frame => /skewY\(-[1-9]/.test(frame.transform) || /rotateY\(-/.test(frame.transform)), "Paper curls while turning");
   assert.equal(entry.options.duration, 1000);
   f.appearance({ transform: "matrix(1, 0, 0, 1, 0, 115)", opacity: "0.05" });
   for (const top of [815, 825, 840, 830, 819]) f.move(top);

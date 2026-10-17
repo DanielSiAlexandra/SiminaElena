@@ -66,38 +66,40 @@ results, credentials or contact details.
 
 ## Motion contract
 
-The six panels are realistic lime sticky notes: a lighter adhesive band at the top,
-a curled lower-right corner with its lighter underside and a soft lifted shadow.
-Each note has a slight fixed tilt. The palette is lime notes on the neutral
-notebook ground, with forest ink/buttons and small pin accents. **60/30/10 is an
-approximate visual hierarchy**, not an exact measured coverage. Do not randomize
-note backgrounds.
+The six panels are sticky notes in three fixed pastel colours: butter yellow,
+soft pink and sky blue (hero yellow, portrait pink, about blue, lessons yellow,
+questions pink, contact blue). Each has a lighter adhesive band, a curled
+lower-right corner and a soft lifted shadow, with a slight fixed tilt. The neutral
+notebook ground dominates, pastel notes are secondary and forest ink/buttons plus
+pins are accents. **60/30/10 is an approximate visual hierarchy**, not an exact
+measured coverage. Do not randomize note backgrounds.
 
-Each note gets one glossy decorative inline-SVG pushpin. `createCardMotion` picks
-forest (`#2f6b52`), ochre (`#d29a2a`) or red (`#cf3a2e`) once on initialization,
-not on every entrance. After the note lands, the pin drops in from above, presses
-into the paper and springs back (`pin-press`, 620ms). It is hidden during travel.
+Each note gets one flat decorative inline-SVG pushpin. `createCardMotion` picks
+sage (`#78967b`), ochre (`#b18733`) or clay (`#a26855`) once on initialization,
+not on every entrance. After the note lands, the pin drops in, presses into the
+paper and springs back (`pin-press`, 620ms). It is hidden during travel.
 Pin colours stay stable across scrolling, reduced-motion changes and hidden-tab
 suspension. Pins are static and visible without JavaScript or with reduced motion,
 excluded from accessibility/navigation, and never block taps.
 Section contents stack below 900px so tablet notes do not squeeze body copy into
 narrow columns; the hero stacks below 650px.
 
-`site/motion.js` coordinates replayable card entry/exit. Cards hinge on their top
-edge like a page: they flip down into view (`rotateX(-88deg)` → slight overshoot →
-flat) and fold back up on exit, regardless of scrolling direction. They retain
-layout space, reverse from their current appearance during interruptions, and become
-fully visible when focused or when reduced motion is enabled. Content and questions
-work without JS.
+`site/motion.js` coordinates replayable card entry/exit as a **page turn hinged at the
+left spiral**: `perspective(1800px) rotateY(84deg) skewY(-8deg)` → curling frames →
+slight overshoot → flat, and back to the turned-away pose on exit (vanilla Web
+Animations, no page-flip library). A CSS `page-curl` light/shadow band sweeps across
+the paper during the turn. Cards retain layout space, reverse from their current
+appearance during interruptions, and become fully visible when focused or when
+reduced motion is enabled. Content and questions work without JS.
 
-Card triggers use **untransformed offset geometry** (`offsetTop`/`offsetHeight`, unaffected by 3D flips or tilts), not an IntersectionObserver on
+Card triggers use **untransformed offset geometry** (`offsetTop`/`offsetHeight`, unaffected by 3D turns or tilts), not an IntersectionObserver on
 the moving panel. Scroll/resize measurements are batched into one requested frame;
 ResizeObserver also handles font/content reflow. No frame loop runs when idle.
 Separate viewport bands prevent edge chatter: enter when the top is above 82%
 and the bottom below 28% of viewport height; exit only when the top passes 98%
 or the bottom passes above 18%.
-The flip lasts **1000ms on entry / 750ms on exit** in `perspective(2000px)`. The
-earlier exit starts while a visible portion remains, so the fold can be seen
+The turn lasts **1000ms on entry / 750ms on exit**. The
+earlier exit starts while a visible portion remains, so the turn can be seen
 before the card leaves the screen.
 
 `site/pen.js` owns the pen state machine. Mouse movement follows height and tilts

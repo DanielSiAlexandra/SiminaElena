@@ -20,21 +20,21 @@ function watchCards(change, elements) {
   };
 }
 
-const FOLDED = { transform: "perspective(2000px) rotateX(-88deg)", opacity: 0 };
-const FLAT = { transform: "perspective(2000px) rotateX(0deg)", opacity: 1 };
-// Hinged at the adhesive top edge: the page swings down, slightly overshoots, then lies flat.
-const FLIP_DOWN = [
+const FOLDED = { transform: "perspective(1800px) rotateY(84deg) skewY(-8deg)", opacity: 0 };
+const FLAT = { transform: "perspective(1800px) rotateY(0deg) skewY(0deg)", opacity: 1 };
+// Hinged at the left spiral: the page turns in with a curl (skew), overshoots slightly, then lies flat.
+const PAGE_TURN = [
   FOLDED,
-  { transform: "perspective(2000px) rotateX(-55deg)", opacity: 1, offset: 0.3 },
-  { transform: "perspective(2000px) rotateX(5deg)", offset: 0.72 },
-  { transform: "perspective(2000px) rotateX(-1.5deg)", offset: 0.88 },
+  { transform: "perspective(1800px) rotateY(55deg) skewY(-6deg)", opacity: 1, offset: 0.3 },
+  { transform: "perspective(1800px) rotateY(14deg) skewY(-2deg)", offset: 0.68 },
+  { transform: "perspective(1800px) rotateY(-3deg) skewY(0.5deg)", offset: 0.86 },
   FLAT,
 ];
 
 export function createCardMotion(elements, {
   watch = typeof window === "undefined" ? null : watchCards,
   bounds = element => {
-    // Offsets ignore transforms, so a flipping note cannot move its own scroll trigger.
+    // Offsets ignore transforms, so a turning page cannot move its own scroll trigger.
     let top = 0;
     for (let node = element; node; node = node.offsetParent) top += node.offsetTop;
     top -= window.scrollY;
@@ -45,7 +45,7 @@ export function createCardMotion(elements, {
   activeElement = () => document.activeElement,
   random = Math.random,
 } = {}) {
-  const pinTones = ["forest", "ochre", "red"];
+  const pinTones = ["sage", "ochre", "clay"];
   const records = new Map(elements.map(element => {
     element.dataset.pinTone = pinTones[Math.floor(random() * pinTones.length)];
     return [element, { animation: null }];
@@ -80,7 +80,7 @@ export function createCardMotion(elements, {
     element.style.transform = final.transform;
     element.style.opacity = String(final.opacity);
     element.dataset.motionState = entering ? "entering" : "exiting";
-    const frames = fresh ? FLIP_DOWN : [current, final];
+    const frames = fresh ? PAGE_TURN : [current, final];
     const animation = element.animate(frames, {
       duration: entering ? 1000 : 750,
       easing: entering ? "cubic-bezier(0.3, 0.6, 0.35, 1)" : "cubic-bezier(0.55, 0, 0.8, 0.45)",
