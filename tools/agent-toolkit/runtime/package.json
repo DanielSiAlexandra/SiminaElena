@@ -1,0 +1,17 @@
+{
+  "name": "travel-assistant-local-agent-tools",
+  "private": true,
+  "dependencies": {
+    "@playwright/cli": "0.1.22",
+    "@reticlehq/server": "3.7.0",
+    "@superdesign/cli": "0.14.0",
+    "better-icons": "1.0.4",
+    "omniroute": "3.8.51"
+  },
+  "overrides": {
+    "next": "16.3.8",
+    "dompurify": "3.4.17",
+    "katex": "0.18.2",
+    "smol-toml": "1.9.1"
+  }
+}

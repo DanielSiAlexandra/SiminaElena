@@ -1,0 +1,17 @@
+.env.private
+docs/notion/node_modules/
+.notion-sync-state.json
+.notion-sync-state.json.*.tmp
+.notion-discovery/
+.agent-toolkit/
+.agents/skills/
+.agents/.toolkit-managed.json
+.agents/.toolkit-managed.json.tmp
+.agents/.toolkit-switch.lock
+.agents/skills.staging-*/
+.agents/skills.previous/
+tools/agent-toolkit/runtime/node_modules/
+tools/agent-toolkit/node/node_modules/
+.graphify/
+graphify-out/
+.superpowers/

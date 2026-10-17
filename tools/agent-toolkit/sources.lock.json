@@ -1,0 +1,118 @@
+{
+  "version": 1,
+  "sources": {
+    "superpowers": {
+      "repository": "obra/superpowers",
+      "revision": "bb92a77741419a4ab5f06e711a283343f1ada0c3",
+      "url": "https://codeload.github.com/obra/superpowers/tar.gz/bb92a77741419a4ab5f06e711a283343f1ada0c3",
+      "sha256": "496b576d4a4a62c0d72cce4a9e99ff46c57026c07fe503931cbb8afd33006cf2"
+    },
+    "uiux": {
+      "repository": "nextlevelbuilder/ui-ux-pro-max-skill",
+      "revision": "56ea9cf174ed86786187daa9de0e6247cb0747e4",
+      "url": "https://codeload.github.com/nextlevelbuilder/ui-ux-pro-max-skill/tar.gz/56ea9cf174ed86786187daa9de0e6247cb0747e4",
+      "sha256": "6a28fffb567e1e27dc731b8f53d6613c0583cb043d28b0fa537119161bc0cb5b"
+    },
+    "dna": {
+      "repository": "zanwei/design-dna",
+      "revision": "593e39bc9e3652734653bd75544a333d7d43615e",
+      "url": "https://codeload.github.com/zanwei/design-dna/tar.gz/593e39bc9e3652734653bd75544a333d7d43615e",
+      "sha256": "bb9798a0c3eb462da4c34eddf974a0f0af7ccef1737251419779166ed184f32a"
+    },
+    "icons": {
+      "repository": "better-auth/better-icons",
+      "revision": "033316ecb8f4982235af4111a2257e80231f5ab1",
+      "url": "https://codeload.github.com/better-auth/better-icons/tar.gz/033316ecb8f4982235af4111a2257e80231f5ab1",
+      "sha256": "8fa5e9bcee5d9005ade6c7a0d981c7c1702cb2ad3e12002452d32a741af591d5"
+    },
+    "polish": {
+      "repository": "jakubkrehel/make-interfaces-feel-better",
+      "revision": "35545ea1512ad59fa463e6b1f95ca9c052981fe6",
+      "url": "https://codeload.github.com/jakubkrehel/make-interfaces-feel-better/tar.gz/35545ea1512ad59fa463e6b1f95ca9c052981fe6",
+      "sha256": "a8b35e5fdf434521a4d7d5117f4fa855156a9a5a7c7dd33b7d9ac41c66d33818"
+    },
+    "ibelick": {
+      "repository": "ibelick/ui-skills",
+      "revision": "705d082e60621d371f6de163c7243d23cfdc8def",
+      "url": "https://codeload.github.com/ibelick/ui-skills/tar.gz/705d082e60621d371f6de163c7243d23cfdc8def",
+      "sha256": "c296c88d8ddeb227f0d39722091874e4b756da60f2f9c0f29c7bdec2a22efa68"
+    },
+    "guidelines": {
+      "repository": "vercel-labs/agent-skills",
+      "revision": "063bee94c3f4df8453406c830b0a7df0f2860278",
+      "url": "https://codeload.github.com/vercel-labs/agent-skills/tar.gz/063bee94c3f4df8453406c830b0a7df0f2860278",
+      "sha256": "3d11926496b220075c3e9ad57b42deef5d3f7a35c8253719c2059d18ad1a3b35"
+    },
+    "taste": {
+      "repository": "Leonxlnx/taste-skill",
+      "revision": "f624f37a8c650b9cc550253104925efe4c8de246",
+      "url": "https://codeload.github.com/Leonxlnx/taste-skill/tar.gz/f624f37a8c650b9cc550253104925efe4c8de246",
+      "sha256": "101f7756231e954cb1f668d014cb6d0eea443e846bf8515749b64f657ea68b07"
+    },
+    "genjutsu": {
+      "repository": "AThevon/genjutsu",
+      "revision": "1f518a71378b15d423389e546e767cffc86e14c3",
+      "url": "https://codeload.github.com/AThevon/genjutsu/tar.gz/1f518a71378b15d423389e546e767cffc86e14c3",
+      "sha256": "bec1f52026e5f2c1087c07af6589064cc7df336f67252b6aae5de3e5346d96a3"
+    },
+    "motion": {
+      "repository": "LottieFiles/motion-design-skill",
+      "revision": "f9a8a041b85185ee4881b3471d3415e939aac772",
+      "url": "https://codeload.github.com/LottieFiles/motion-design-skill/tar.gz/f9a8a041b85185ee4881b3471d3415e939aac772",
+      "sha256": "c7c0fd1035e4477aa22bc44fefe35e622f9a7d2523d184df947185e875df838e"
+    },
+    "gsap": {
+      "repository": "greensock/gsap-skills",
+      "revision": "aed9cfd3277740755f6bfc1155c7aa645403b760",
+      "url": "https://codeload.github.com/greensock/gsap-skills/tar.gz/aed9cfd3277740755f6bfc1155c7aa645403b760",
+      "sha256": "0299ed40033cdeba00beeed2be393e943f27cb311880b35f6638d813917bc7ef"
+    },
+    "three": {
+      "repository": "CloudAI-X/threejs-skills",
+      "revision": "b1c623076c661fc9b03dac19292e825a5d106823",
+      "url": "https://codeload.github.com/CloudAI-X/threejs-skills/tar.gz/b1c623076c661fc9b03dac19292e825a5d106823",
+      "sha256": "75f3ee8cee41747311d0f6269c712e1010e63e148de9e46a80a8ef43eb9c6eb8"
+    },
+    "remotion": {
+      "repository": "remotion-dev/skills",
+      "revision": "1441a11e95db35443bd76bb318386c0d3ca00053",
+      "url": "https://codeload.github.com/remotion-dev/skills/tar.gz/1441a11e95db35443bd76bb318386c0d3ca00053",
+      "sha256": "a0a3dbe4f9567d0faf1ccaa14082bea1b0025993956ffc6445f290b5df249c4d"
+    },
+    "playwright": {
+      "repository": "microsoft/playwright-cli",
+      "revision": "b85c7a736bb473bf55b584e54a09ffa698d6d871",
+      "url": "https://codeload.github.com/microsoft/playwright-cli/tar.gz/b85c7a736bb473bf55b584e54a09ffa698d6d871",
+      "sha256": "fb7f526d7b59b48bcff9d95b01ebe8befceaef3047e87a4ba0f896fd21ec34a1"
+    },
+    "inspector": {
+      "repository": "NVIDIA/SkillSpector",
+      "revision": "cf5cac7ba5c756a6e0ebf52dc9763f49422f889f",
+      "url": "https://codeload.github.com/NVIDIA/SkillSpector/tar.gz/cf5cac7ba5c756a6e0ebf52dc9763f49422f889f",
+      "sha256": "a79e0517c9cfc144184dc6470a75917066091710a3c9b9c621c97a0ed4b7ddde"
+    },
+    "graphify": {
+      "repository": "Graphify-Labs/graphify",
+      "revision": "86c57be8204673c2a1b9849a3292a7dd3ab373d8",
+      "url": "https://codeload.github.com/Graphify-Labs/graphify/tar.gz/86c57be8204673c2a1b9849a3292a7dd3ab373d8",
+      "sha256": "669ff94fc62cc7f68ccab2e5beb2e1f1250f91aab0790119eadb33a18dfda6b4"
+    },
+    "reticle": {
+      "repository": "reticlehq/reticle",
+      "revision": "e907dc62dd2e77a4433c2fb908419378c947774d",
+      "url": "https://codeload.github.com/reticlehq/reticle/tar.gz/e907dc62dd2e77a4433c2fb908419378c947774d",
+      "sha256": "abbea9cb80f822d54c7ab0e65fc471ffeb39bc166db63387e008c14a75bf58f3"
+    },
+    "superdesign": {
+      "repository": "superdesigndev/superdesign-skill",
+      "revision": "f9f05cd988c247dce6c072eaf9ac6b162f2ffc4b",
+      "url": "https://codeload.github.com/superdesigndev/superdesign-skill/tar.gz/f9f05cd988c247dce6c072eaf9ac6b162f2ffc4b",
+      "sha256": "cfdafc49a51d8d31d2f2ac6085ac6e2ffc29cf21afdf8fa17f75246ba62b5854"
+    }
+  },
+  "guidelines": {
+    "revision": "434b7f91364665f2f733b310ec54809bf8f37937",
+    "url": "https://raw.githubusercontent.com/vercel-labs/web-interface-guidelines/434b7f91364665f2f733b310ec54809bf8f37937/command.md",
+    "sha256": "d246b026f4f29b5823a9cc857f9edf3d2507002e055e32040cadeaf3b38e0234"
+  }
+}

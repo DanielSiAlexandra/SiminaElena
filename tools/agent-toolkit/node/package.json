@@ -1,0 +1,8 @@
+{
+  "name": "travel-assistant-isolated-node",
+  "private": true,
+  "dependencies": {
+    "node": "24.22.0",
+    "npm": "11.13.0"
+  }
+}

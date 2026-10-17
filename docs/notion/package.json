@@ -1,0 +1,14 @@
+{
+  "name": "travel-assistant-notion-cli",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@notionhq/client": "5.26.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
