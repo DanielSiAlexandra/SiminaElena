@@ -92,8 +92,10 @@ Modernizr tests it reads. `site/book-flip.js` gives every note **one persistent
 BookBlock instance** (it adds a window listener per instance, so never recreate
 it) holding a blank sheet and a snapshot of the note (ids stripped, padding pinned,
 inert and `aria-hidden`). Entry turns blank → note, exit turns note → blank, both
-forward `next()` with `circular`, so pages always turn **right to left** around
-the centre spine, 1600ms ease-in-out with BookBlock's shading. Notes outside the
+forward `next()` with `circular`. Section notes on wider screens turn **right to
+left** around a vertical centre spine; the two hero notes, and every note at
+≤650px, use BookBlock's horizontal mode and fold **bottom to top** around a
+horizontal spine (orientation is chosen per turn, so rotating a phone works). 1600ms ease-in-out with BookBlock's shading. Notes outside the
 reading area show the blank sheet. Reversals and focus/anchor reveals settle the
 book by hand (hidden books never fire `transitionend`). Without JS or with
 reduced motion no book is created and notes are plain. The MIT notice is in

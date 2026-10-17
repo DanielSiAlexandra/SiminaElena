@@ -66,6 +66,9 @@ test("notebook decorations, coherent cards, portrait and contact shortcut are ac
   assert.match(flip, /circular:\s*true/);
   assert.doesNotMatch(flip, /\.prev\(|direction:\s*"rtl"/, "Pages only ever turn forward, right to left");
   assert.match(flip, /inert/, "Cloned page halves stay out of focus and the accessibility tree");
+  assert.match(flip, /bb-horizontal/, "Hero notes and phones turn bottom to top");
+  assert.match(flip, /closest\("\.hero"\)/);
+  assert.match(flip, /max-width: 650px/);
   assert.match(css, /@keyframes pin-press/);
   assert.match(css, /\[data-motion-state="entering"\][^]*?\.note-pin/);
   assert.match(css, /\.note-pin\s*\{[^}]*pointer-events:\s*none/);

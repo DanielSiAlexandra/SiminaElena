@@ -6,6 +6,13 @@ import "./vendor/bookblock/bookblock.css";
 
 const BookBlock = window.BookBlock;
 const TURN_SPEED = 1600;
+const phone = window.matchMedia("(max-width: 650px)");
+
+// Hero notes and every note on phones fold their lower half up over the upper half
+// (BookBlock "horizontal"); wider section notes turn right to left around a centre spine.
+function orientation(card) {
+  return card.closest(".hero") || phone.matches ? "horizontal" : "vertical";
+}
 
 function sheet(card, withContent) {
   const page = document.createElement("div");
@@ -75,9 +82,14 @@ export function createBookFlip(card, { speed = TURN_SPEED } = {}) {
     turn(entering, done) {
       note.replaceChildren(sheet(card, true));
       settle(!entering);
+      // BookBlock reads its orientation only from this class, so it can change per turn.
+      const horizontal = orientation(card) === "horizontal";
+      book.classList.toggle("bb-horizontal", horizontal);
+      book.classList.toggle("bb-vertical", !horizontal);
       const width = book.offsetWidth;
       instance.elWidth = width;
-      book.style.perspective = `${Math.max(1200, Math.round(width * 2.5))}px`;
+      const span = horizontal ? book.offsetHeight : width;
+      book.style.perspective = `${Math.max(1200, Math.round(span * 2.5))}px`;
       finish = done;
       instance.next();
     },
