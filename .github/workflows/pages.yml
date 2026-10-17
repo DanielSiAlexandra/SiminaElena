@@ -5,13 +5,21 @@ on:
     branches: [master]
     paths:
       - "site/**"
-      - "tests/site.test.mjs"
+      - "tests/**"
+      - "package.json"
+      - "package-lock.json"
+      - "vite.config.mjs"
+      - "tools/build-site.mjs"
       - ".github/workflows/pages.yml"
       - ".gitignore"
   pull_request:
     paths:
       - "site/**"
-      - "tests/site.test.mjs"
+      - "tests/**"
+      - "package.json"
+      - "package-lock.json"
+      - "vite.config.mjs"
+      - "tools/build-site.mjs"
       - ".github/workflows/pages.yml"
       - ".gitignore"
   workflow_dispatch:
@@ -26,7 +34,7 @@ concurrency:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -34,10 +42,23 @@ jobs:
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
+          cache: npm
+      - name: Install locked build dependencies
+        run: npm ci --no-fund
       - name: Check public content, assets, privacy and workflow
-        run: node --test tests/site.test.mjs
-      - name: Check vanilla JavaScript syntax
-        run: node --check site/main.js
+        run: npm test
+      - name: Build minified HTML, CSS and JavaScript
+        run: npm run build
+      - name: Verify actual production artifact
+        run: npm run test:dist
+      - name: Preserve validated build
+        if: github.ref == 'refs/heads/master' && github.event_name != 'pull_request'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: validated-site
+          path: dist
+          if-no-files-found: error
+          retention-days: 1
 
   deploy:
     if: github.ref == 'refs/heads/master' && github.event_name != 'pull_request'
@@ -52,14 +73,15 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
-          persist-credentials: false
+          name: validated-site
+          path: dist
       - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
       - name: Upload public website only
         uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
         with:
-          path: site
+          path: dist
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4

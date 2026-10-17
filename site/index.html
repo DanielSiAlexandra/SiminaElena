@@ -12,10 +12,20 @@
   <title>Elena Simina — Lecții cu răbdare</title>
   <link rel="icon" href="assets/portrait-placeholder.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
-  <script src="main.js" defer></script>
+  <script type="module" src="main.js"></script>
 </head>
 <body>
   <a class="skip-link" href="#continut">Sari la conținut</a>
+  <div class="notebook-binding" aria-hidden="true"></div>
+  <div class="pen-rail" aria-hidden="true">
+    <div class="handwriting" hidden></div>
+    <img class="floating-pen" src="assets/pen.svg" alt="" width="40" height="160">
+  </div>
+  <button class="motion-control" type="button" aria-label="Oprește animațiile" aria-pressed="true" aria-describedby="motion-help" data-playing="true" hidden>
+    <svg class="pause-icon" width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 3h3v14H5zM12 3h3v14h-3z" fill="currentColor"/></svg>
+    <svg class="play-icon" width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="m5 2 13 8-13 8z" fill="currentColor"/></svg>
+  </button>
+  <span id="motion-help" class="sr-only">Controlează animațiile decorative. Setarea de mișcare redusă a dispozitivului are prioritate.</span>
   <header class="site-header">
     <a class="name" href="#continut" aria-label="Elena Simina, începutul paginii">Elena Simina<span>Învățătoare</span></a>
     <nav aria-label="Navigare principală">
@@ -27,49 +37,49 @@
 
   <main id="continut">
     <section class="hero" aria-labelledby="titlu">
-      <div class="hero-paper">
-        <h1 id="titlu" data-enter>Învățăm<br>cu răbdare</h1>
-        <p class="hero-description" data-enter>Lecții particulare pentru copii din ciclul primar, cu un om care a ales să rămână aproape de școală.</p>
-        <a class="button" href="https://www.facebook.com/elena.simina.58" data-enter>Scrie-mi pe Facebook <span aria-hidden="true">↗</span></a>
-        <p class="hero-note" data-enter>Fiecare copil are ritmul lui.<br>De acolo începem.</p>
+      <div class="hero-paper" data-card>
+        <h1 id="titlu">Învățăm<br>cu răbdare</h1>
+        <p class="hero-description">Lecții particulare pentru copii din ciclul primar, cu un om care a ales să rămână aproape de școală.</p>
+        <a class="button" href="https://www.facebook.com/elena.simina.58">Scrie-mi pe Facebook <span aria-hidden="true">↗</span></a>
+        <p class="hero-note">Fiecare copil are ritmul lui.<br>De acolo începem.</p>
       </div>
-      <figure class="hero-picture" data-enter>
-        <img src="assets/portrait-placeholder.svg" width="640" height="760" alt="Ilustrație: un caiet deschis, un creion și primele litere, pe o masă verde.">
-        <figcaption>Ilustrație de prezentare · loc pentru o fotografie personală</figcaption>
+      <figure class="hero-picture" data-card>
+        <img class="portrait" src="assets/elena-simina.jpg" width="200" height="200" alt="Elena Simina, în aer liber, purtând o bluză roșie.">
+        <figcaption><span>Elena Simina</span>O viață la catedră.<br>Aceeași bucurie de a explica.</figcaption>
       </figure>
     </section>
 
     <section id="despre" class="about section-space" aria-labelledby="despre-titlu">
-      <div class="section-intro" data-enter>
+      <div class="section-intro" data-card>
         <h2 id="despre-titlu">Aproape de copii</h2>
         <p>O viață la catedră.<br>Aceeași bucurie de a explica.</p>
       </div>
-      <div class="letter">
-        <p class="lead" data-enter>Sunt Elena Simina. Îmi place să predau și să văd cum un copil prinde curaj atunci când începe să înțeleagă.</p>
-        <p data-enter>După o viață dedicată învățământului primar, îmi doresc să continui prin lecții particulare. Cred în explicații liniștite, în întrebări puse fără teamă și în bucuria de a descoperi împreună.</p>
-        <p data-enter>Copiii nu au nevoie să ridicăm vocea ca să ne asculte. Au nevoie să le trezim curiozitatea, să îi luăm în serios și să le lăsăm timp să încerce.</p>
-        <p class="signature" aria-label="Elena Simina" data-enter>Elena</p>
+      <div class="letter" data-card>
+        <p class="lead">Sunt Elena Simina. Îmi place să predau și să văd cum un copil prinde curaj atunci când începe să înțeleagă.</p>
+        <p>După o viață dedicată învățământului primar, îmi doresc să continui prin lecții particulare. Cred în explicații liniștite, în întrebări puse fără teamă și în bucuria de a descoperi împreună.</p>
+        <p>Copiii nu au nevoie să ridicăm vocea ca să ne asculte. Au nevoie să le trezim curiozitatea, să îi luăm în serios și să le lăsăm timp să încerce.</p>
+        <p class="signature" aria-label="Elena Simina">Elena</p>
       </div>
     </section>
 
     <section id="lectii" class="lessons section-space" aria-labelledby="lectii-titlu">
-      <div class="lesson-intro" data-enter>
+      <div class="lesson-intro" data-card>
         <h2 id="lectii-titlu">Pas cu pas</h2>
         <p>Nu pornim de la cât ar trebui să știe un copil, ci de la ce înțelege acum.</p>
         <p>Putem discuta despre exersarea cititului, a scrisului sau a socotitului și despre ce îi dă bătăi de cap la școală. Acestea sunt exemple; sprijinul potrivit îl stabilim împreună.</p>
       </div>
-      <div class="lesson-slip" data-enter>
+      <div class="lesson-slip" data-card>
         <h3>Un început firesc</h3>
         <ol>
-          <li data-enter>
+          <li>
             <h4>Mai întâi, ascultăm</h4>
             <p>Îmi povestești despre copilul tău: ce îi place, unde se împotmolește și cum se simte la școală.</p>
           </li>
-          <li data-enter>
+          <li>
             <h4>Alegem ce exersăm</h4>
             <p>Discutăm despre nevoile lui și alegem împreună de unde ar fi bine să începem.</p>
           </li>
-          <li data-enter>
+          <li>
             <h4>Lăsăm loc întrebărilor</h4>
             <p>Cu explicații pe înțelesul lui și încercări fără grabă, facem loc înțelegerii, nu fricii de a greși.</p>
           </li>
@@ -79,24 +89,24 @@
     </section>
 
     <section id="intrebari" class="questions section-space" aria-labelledby="intrebari-titlu">
-      <div class="section-intro" data-enter>
+      <div class="section-intro" data-card>
         <h2 id="intrebari-titlu">Bine de știut</h2>
         <p>Detaliile practice le stabilim împreună, înainte de prima lecție.</p>
       </div>
       <div class="answers">
-        <details open data-enter>
+        <details open data-card>
           <summary>Pentru cine sunt lecțiile?</summary>
           <p>Pentru copii din ciclul primar care au nevoie de sprijin și explicații cu răbdare. Spune-mi în ce clasă este copilul și ce ați dori să lucrăm, ca să vedem dacă îl pot ajuta.</p>
         </details>
-        <details data-enter>
+        <details data-card>
           <summary>Unde și cum ne întâlnim?</summary>
           <p>De stabilit împreună. Localitatea, locul și formatul lecțiilor nu sunt încă afișate aici. Le clarificăm în discuția de început.</p>
         </details>
-        <details data-enter>
+        <details data-card>
           <summary>Care sunt programul și costul?</summary>
           <p>De stabilit împreună. Îți voi confirma disponibilitatea, durata și tariful înainte de a hotărî dacă începem.</p>
         </details>
-        <details data-enter>
+        <details data-card>
           <summary>Ce să îți scriu prima dată?</summary>
           <p>Sunt suficiente clasa copilului și câteva cuvinte despre sprijinul de care are nevoie. Nu trimite acte, informații medicale sau alte date sensibile.</p>
         </details>
@@ -104,8 +114,8 @@
     </section>
 
     <section id="contact" class="contact section-space" aria-labelledby="contact-titlu">
-      <h2 id="contact-titlu" data-enter>Să începem<br>cu o discuție</h2>
-      <div class="contact-copy" data-enter>
+      <h2 id="contact-titlu" data-card>Să începem<br>cu o discuție</h2>
+      <div class="contact-copy" data-card>
         <p>Povestește-mi puțin despre copilul tău. Vedem împreună care ar putea fi următorul pas.</p>
         <a class="button button-light" href="https://www.facebook.com/elena.simina.58">Scrie-mi pe Facebook <span aria-hidden="true">↗</span></a>
         <p class="contact-note">Linkul deschide profilul meu de Facebook.<br>Nu colectăm date prin acest site.</p>

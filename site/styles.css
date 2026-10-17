@@ -11,6 +11,8 @@
   --quick: 140ms;
   --standard: 220ms;
   --slow: 550ms;
+  --binding-width: 52px;
+  --pen-width: 108px;
   font-family: Arial, Helvetica, sans-serif;
   font-size: 18px;
   line-height: 1.65;
@@ -19,7 +21,71 @@
 }
 
 * { box-sizing: border-box; }
-body { margin: 0; }
+body {
+  margin: 0;
+  padding-left: var(--binding-width);
+  padding-right: var(--pen-width);
+  background: repeating-linear-gradient(to bottom, transparent 0 31px, #cbd4c2 31px 32px); /* taste-skill-ignore: Explicitly requested notebook ruling. */
+}
+[hidden] { display: none !important; }
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.notebook-binding {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: var(--binding-width);
+  border-right: 2px solid #b57b72;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='40'%3E%3Ccircle cx='33' cy='21' r='4' fill='%23919f8e'/%3E%3Cpath d='M33 21C-5 23-5-2 28 4' stroke='%234d5e52' stroke-width='5' fill='none'/%3E%3Cpath d='M33 20C-5 22-5-3 28 3' stroke='%23bac4b1' stroke-width='2' fill='none'/%3E%3C/svg%3E") repeat-y center top;
+  pointer-events: none;
+  z-index: 3;
+}
+.pen-rail {
+  position: fixed;
+  inset: 0 0 0 auto;
+  width: var(--pen-width);
+  pointer-events: none;
+  overflow: clip;
+  z-index: 4;
+}
+.floating-pen {
+  position: absolute;
+  top: -126px;
+  left: -16px;
+  width: 32px;
+  height: 128px;
+  transform-origin: 16px 126px;
+  transform: translate(calc(var(--pen-width) / 2), 160px) rotate(-20deg);
+  filter: drop-shadow(3px 3px 2px #233e3429); /* taste-skill-ignore: The pen is a floating overlay. */
+}
+.handwriting { position: absolute; left: 50%; transform: translateX(-50%); }
+.handwriting svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.motion-control {
+  position: fixed;
+  right: calc((var(--pen-width) - 44px) / 2);
+  bottom: 16px;
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--green);
+  color: var(--light);
+  cursor: pointer;
+}
+.motion-control:focus-visible { outline: 3px solid var(--ink); outline-offset: 4px; }
+.motion-control[data-playing="true"] .play-icon,
+.motion-control[data-playing="false"] .pause-icon { display: none; }
+.motion-control[aria-disabled="true"] { cursor: default; }
+main { overflow: clip; }
 a { color: inherit; text-underline-offset: 0.22em; }
 a:focus-visible, summary:focus-visible {
   outline: 3px solid currentColor;
@@ -96,18 +162,33 @@ h1 { font-size: clamp(3.4rem, 6.5vw, 5.5rem); }
 .button:active { transform: scale(0.98); }
 .hero .button { margin-top: 32px; }
 .hero-note { margin-top: 42px; font-size: 0.9rem; color: var(--muted); }
-.hero-picture { position: relative; overflow: hidden; background: var(--green); border-radius: 26px 3px 3px 3px; }
-.hero-picture img { width: 100%; height: 100%; object-fit: cover; }
+.hero-picture {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  padding: 48px 24px;
+  overflow: hidden;
+  background: var(--green);
+  border-radius: 26px 3px 3px 3px;
+}
+.hero-picture .portrait {
+  width: 200px;
+  height: 200px;
+  object-fit: cover;
+  border: 10px solid var(--paper);
+  transform: rotate(-4deg);
+}
 .hero-picture figcaption {
-  position: absolute;
-  inset: auto 0 0;
-  padding: 12px 20px;
   color: var(--light);
   background: var(--green);
-  font-size: 0.85rem;
+  font-size: 1rem;
   line-height: 1.5;
   text-align: center;
 }
+.hero-picture figcaption span { display: block; font: 2rem/1.2 Georgia, serif; margin-bottom: 20px; }
 .section-space { padding: 120px 7%; }
 .about { display: grid; grid-template-columns: 1fr 1.25fr; gap: 9%; background: var(--paper); margin-top: 16px; }
 .section-intro p { margin-top: 26px; max-width: 29ch; }
@@ -154,25 +235,29 @@ details p { margin-top: 18px; }
   .lesson-slip { padding: 36px 24px 48px; }
 }
 @media (max-width: 650px) {
-  :root { font-size: 17px; }
-  .site-header { padding: 24px 22px; align-items: start; }
+  :root { font-size: 17px; --binding-width: 18px; --pen-width: 40px; }
+  .notebook-binding { background-size: 24px 32px; background-position: -7px top; }
+  .floating-pen { width: 24px; height: 96px; top: -94px; left: -12px; transform-origin: 12px 94px; }
+  .motion-control { right: 2px; bottom: 12px; }
+  .site-header { padding: 24px 12px; align-items: start; flex-direction: column; gap: 12px; }
   .name { font-size: 1.45rem; }
-  nav { gap: 0 16px; justify-content: end; max-width: 160px; font-size: 0.88rem; }
-  .hero { grid-template-columns: 1fr; padding: 0 12px; gap: 12px; }
-  .hero-paper { padding: 48px 26px 38px; border-radius: 3px 3px 22px 3px; }
-  h1 { font-size: clamp(3.1rem, 13vw, 4rem); }
+  nav { gap: 0 18px; font-size: 0.88rem; }
+  .hero { grid-template-columns: 1fr; padding: 0 6px; gap: 12px; }
+  .hero-paper { padding: 40px 16px 32px; border-radius: 3px 3px 22px 3px; }
+  h1 { font-size: clamp(2.1rem, 10vw, 3.4rem); }
+  h2 { font-size: 1.85rem; }
   .hero-description { max-width: 32ch; }
   .hero .button { margin-top: 26px; }
-  .hero-picture { height: 360px; border-radius: 22px 3px 3px 3px; }
-  .hero-picture img { object-position: 50% 48%; }
-  .section-space { padding: 68px 26px; }
+  .hero-picture { min-height: 360px; border-radius: 22px 3px 3px 3px; }
+  .section-space { padding: 60px 18px; }
   .about, .lessons, .questions, .contact { grid-template-columns: 1fr; gap: 38px; }
   .about { margin-top: 12px; }
   .section-intro p { margin-top: 20px; max-width: 34ch; }
   .lead { font-size: 1.2rem; }
   .lesson-slip { margin-inline: -8px; padding: 36px 28px 50px; }
-  .contact h2 { font-size: 2.8rem; }
-  .site-footer { padding: 28px 26px; flex-direction: column; align-items: start; gap: 8px; }
+  .contact h2 { font-size: 2.1rem; }
+  .button { padding: 14px 12px; gap: 10px; }
+  .site-footer { padding: 28px 18px; flex-direction: column; align-items: start; gap: 8px; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }

@@ -1,30 +1,121 @@
-(() => {
-  const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
-  const active = new Set();
-  preference.addEventListener("change", () => {
-    if (preference.matches) {
-      for (const animation of active) animation.cancel();
-      active.clear();
-    }
+import { createCardMotion, createMotionState } from "./motion.js";
+import { createPen, traceStrokes } from "./pen.js";
+import handwriting from "./assets/handwriting.svg?raw";
+
+const cards = [...document.querySelectorAll("[data-card]")];
+const cardMotion = createCardMotion(cards);
+const control = document.querySelector(".motion-control");
+const rail = document.querySelector(".pen-rail");
+const penArt = document.querySelector(".floating-pen");
+const ink = document.querySelector(".handwriting");
+ink.innerHTML = handwriting;
+const phrases = [...ink.querySelectorAll("path")].map(path => {
+  const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+  const strokes = path.getAttribute("d").match(/M[^M]+/g).map(data => {
+    const stroke = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    stroke.setAttribute("d", data);
+    group.append(stroke);
+    return stroke;
   });
-  if (preference.matches || typeof IntersectionObserver === "undefined") return;
+  path.replaceWith(group);
+  const lengths = strokes.map(stroke => stroke.getTotalLength());
+  for (const [index, stroke] of strokes.entries()) stroke.style.strokeDasharray = `${lengths[index]} ${lengths[index]}`;
+  return { group, strokes, lengths };
+});
+const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
+let inkTop = 0;
+let currentPath;
 
-  const observer = new IntersectionObserver(entries => {
-    for (const entry of entries) {
-      if (!entry.isIntersecting) continue;
-      observer.unobserve(entry.target);
-      if (preference.matches || typeof entry.target.animate !== "function") continue;
-      const animation = entry.target.animate(
-        [
-          { transform: "translateY(16px)", opacity: 0.82 },
-          { transform: "translateY(0)", opacity: 1 },
-        ],
-        { duration: 550, easing: "cubic-bezier(0.22, 1, 0.36, 1)" },
-      );
-      active.add(animation);
-      animation.onfinish = () => active.delete(animation);
+function placePen(x, y, tilt) {
+  penArt.style.transform = `translate(${x}px, ${y}px) rotate(${tilt}deg)`;
+}
+
+const pen = createPen({
+  bounds: () => ({ min: 120, max: Math.max(120, window.innerHeight - 100) }),
+  move: (y, tilt) => placePen(rail.clientWidth * 0.5, y, tilt - 20),
+  clear: () => {
+    ink.hidden = true;
+    currentPath = null;
+  },
+  draw: (progress, phrase, startY) => {
+    const scale = Math.min(1, rail.clientWidth / 56);
+    const inscription = phrases[phrase];
+    if (currentPath !== inscription) {
+      currentPath = inscription;
+      for (const candidate of phrases) candidate.group.style.display = candidate === inscription ? "" : "none";
+      inkTop = Math.max(90, Math.min(window.innerHeight - 250 * scale - 24, startY));
+      ink.style.top = `${inkTop}px`;
+      ink.style.width = `${52 * scale}px`;
+      ink.style.height = `${240 * scale}px`;
+      ink.hidden = false;
     }
-  }, { threshold: 0.12 });
+    const trace = traceStrokes(inscription.lengths, progress);
+    inscription.strokes.forEach((stroke, index) => { stroke.style.strokeDashoffset = String(trace.offsets[index]); });
+    const point = inscription.strokes[trace.index].getPointAtLength(trace.distance);
+    const x = (rail.clientWidth - 52 * scale) / 2 + (48 - point.y) * scale;
+    const y = inkTop + point.x * scale;
+    placePen(x, y, -28 + Math.sin(progress * Math.PI * 8) * 5);
+    return y;
+  },
+  change: state => { rail.dataset.state = state; },
+});
 
-  for (const element of document.querySelectorAll("[data-enter]")) observer.observe(element);
-})();
+let effectiveMotion = false;
+pen.setVisible(!document.hidden);
+const motion = createMotionState(preference.matches, enabled => {
+  effectiveMotion = enabled;
+  cardMotion.setEnabled(enabled && !document.hidden);
+  pen.setEnabled(enabled);
+  const reduced = preference.matches;
+  control.setAttribute("aria-label", enabled ? "Oprește animațiile" : "Pornește animațiile");
+  control.setAttribute("aria-pressed", String(enabled));
+  control.setAttribute("aria-disabled", String(reduced));
+  control.dataset.playing = String(enabled);
+  control.title = reduced ? "Animațiile sunt oprite în setările dispozitivului" : enabled ? "Oprește animațiile" : "Pornește animațiile";
+});
+control.hidden = false;
+control.addEventListener("click", () => motion.toggle());
+preference.addEventListener("change", event => motion.setReduced(event.matches));
+
+window.addEventListener("pointermove", event => {
+  if (effectiveMotion && event.pointerType !== "touch") {
+    pen.target(event.clientY, ((event.clientX / window.innerWidth) - 0.5) * 24);
+  }
+}, { passive: true });
+let touchStart;
+window.addEventListener("pointerdown", event => {
+  if (event.pointerType === "touch") touchStart = { x: event.clientX, y: event.clientY, id: event.pointerId };
+}, { passive: true });
+window.addEventListener("pointerup", event => {
+  if (effectiveMotion && event.pointerType === "touch" && touchStart?.id === event.pointerId &&
+      Math.hypot(event.clientX - touchStart.x, event.clientY - touchStart.y) < 12 &&
+      !event.target.closest("button, a, summary")) pen.target(event.clientY);
+  touchStart = null;
+}, { passive: true });
+window.addEventListener("pointercancel", () => { touchStart = null; }, { passive: true });
+window.addEventListener("resize", () => pen.reposition(), { passive: true });
+window.addEventListener("scroll", () => { if (effectiveMotion) pen.reposition(); }, { passive: true });
+document.addEventListener("visibilitychange", () => {
+  pen.setVisible(!document.hidden);
+  cardMotion.setEnabled(effectiveMotion && !document.hidden);
+});
+document.addEventListener("focusin", event => cardMotion.reveal(event.target.closest("[data-card]")));
+function revealAnchor() {
+  const target = document.getElementById(location.hash.slice(1));
+  if (!target) return;
+  for (const card of cards) {
+    if (card.contains(target) || target.contains(card)) cardMotion.reveal(card);
+  }
+}
+window.addEventListener("hashchange", revealAnchor);
+revealAnchor();
+window.addEventListener("pagehide", () => {
+  cardMotion.destroy();
+  pen.setVisible(false);
+});
+window.addEventListener("pageshow", event => {
+  if (event.persisted) {
+    pen.setVisible(true);
+    cardMotion.setEnabled(effectiveMotion);
+  }
+});
