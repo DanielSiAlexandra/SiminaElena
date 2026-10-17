@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createCardMotion, createMotionState } from "../site/motion.js";
+import { createCardMotion } from "../site/motion.js";
 
 function card() {
   const animations = [];
@@ -31,9 +31,12 @@ test("card enters, exits and re-enters with no stale completion on reversal", ()
   callback([{ target: element, isIntersecting: true, boundingClientRect: { top: 80 } }]);
   assert.equal(element.dataset.motionState, "entering");
   const first = element.animations[0];
+  assert.deepEqual(first.frames[0], { transform: "translateY(48px)", opacity: 0 });
+  assert.deepEqual(first.frames[1], { transform: "translateY(0px)", opacity: 1 });
   callback([{ target: element, isIntersecting: false, boundingClientRect: { top: -500 } }]);
   assert.ok(first.cancelled);
   assert.equal(element.dataset.motionState, "exiting");
+  assert.deepEqual(element.animations.at(-1).frames[1], { transform: "translateY(-48px)", opacity: 0 });
   first.onfinish();
   assert.equal(element.dataset.motionState, "exiting", "Old completion cannot override current state");
   callback([{ target: element, isIntersecting: true, boundingClientRect: { top: -20 } }]);
@@ -67,20 +70,22 @@ test("focused cards stay visible, and unsupported animation stays static", () =>
   fallback.destroy();
 });
 
-test("motion state coordinates pause and changing system preference", () => {
-  const values = [];
-  const state = createMotionState(false, enabled => values.push(enabled));
-  assert.equal(state.enabled, true);
-  state.toggle();
-  assert.equal(state.enabled, false);
-  state.setReduced(true);
-  state.toggle();
-  assert.equal(state.enabled, false, "System reduction cannot be overridden");
-  state.setReduced(false);
-  assert.equal(state.enabled, false, "User pause survives preference changes");
-  state.toggle();
-  assert.equal(state.enabled, true);
-  assert.deepEqual(values, [true, false, false, false, false, true]);
+test("completed exits re-enter from below in either scroll direction", () => {
+  for (const top of [-500, 1200]) {
+    const element = card();
+    let callback;
+    const controller = createCardMotion([element], {
+      observe: fn => { callback = fn; return { observe() {}, disconnect() {} }; },
+      computed: () => ({ transform: "matrix(1, 0, 0, 1, 0, -20)", opacity: "0" }),
+      activeElement: () => null,
+      narrow: () => true,
+    });
+    controller.setEnabled(true);
+    callback([{ target: element, isIntersecting: false, boundingClientRect: { top } }]);
+    element.animations.at(-1).onfinish();
+    callback([{ target: element, isIntersecting: true, boundingClientRect: { top } }]);
+    assert.deepEqual(element.animations.at(-1).frames[0], { transform: "translateY(24px)", opacity: 0 });
+  }
 });
 
 test("observer teardown rejects queued callbacks and restores oversized cards", () => {

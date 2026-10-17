@@ -23,8 +23,9 @@ test("production artifact is isolated, minified and contains only public assets"
   await walk(output);
   assert.ok(files.some(path => /assets\/.+-[\w-]+\.js$/.test(path)), "Hashed JS bundle");
   assert.ok(files.some(path => /assets\/.+-[\w-]+\.css$/.test(path)), "Hashed CSS bundle");
+  assert.equal(files.filter(path => /\.woff2$/.test(path)).length, 2, "Both local font subsets published");
   for (const file of files) {
-    assert.match(file, /^(?:index\.html|assets\/[\w.-]+\.(?:js|css|svg|jpg))$/);
+    assert.match(file, /^(?:index\.html|assets\/third-party-licenses-[\w-]+\.txt|assets\/[\w.-]+\.(?:js|css|svg|jpg|woff2))$/);
     assert.doesNotMatch(file, /\.map$|personal-info|toolkit|\.env|node_modules/);
     if (/\.(?:html|js|css|svg)$/.test(file)) {
       const text = await readFile(resolve(output, file), "utf8");

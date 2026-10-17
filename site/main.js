@@ -1,10 +1,9 @@
-import { createCardMotion, createMotionState } from "./motion.js";
+import { createCardMotion } from "./motion.js";
 import { createPen, traceStrokes } from "./pen.js";
 import handwriting from "./assets/handwriting.svg?raw";
 
 const cards = [...document.querySelectorAll("[data-card]")];
 const cardMotion = createCardMotion(cards);
-const control = document.querySelector(".motion-control");
 const rail = document.querySelector(".pen-rail");
 const penArt = document.querySelector(".floating-pen");
 const ink = document.querySelector(".handwriting");
@@ -62,20 +61,13 @@ const pen = createPen({
 
 let effectiveMotion = false;
 pen.setVisible(!document.hidden);
-const motion = createMotionState(preference.matches, enabled => {
-  effectiveMotion = enabled;
-  cardMotion.setEnabled(enabled && !document.hidden);
-  pen.setEnabled(enabled);
-  const reduced = preference.matches;
-  control.setAttribute("aria-label", enabled ? "Oprește animațiile" : "Pornește animațiile");
-  control.setAttribute("aria-pressed", String(enabled));
-  control.setAttribute("aria-disabled", String(reduced));
-  control.dataset.playing = String(enabled);
-  control.title = reduced ? "Animațiile sunt oprite în setările dispozitivului" : enabled ? "Oprește animațiile" : "Pornește animațiile";
-});
-control.hidden = false;
-control.addEventListener("click", () => motion.toggle());
-preference.addEventListener("change", event => motion.setReduced(event.matches));
+function updateMotion() {
+  effectiveMotion = !preference.matches;
+  cardMotion.setEnabled(effectiveMotion && !document.hidden);
+  pen.setEnabled(effectiveMotion);
+}
+updateMotion();
+preference.addEventListener("change", updateMotion);
 
 window.addEventListener("pointermove", event => {
   if (effectiveMotion && event.pointerType !== "touch") {

@@ -1,12 +1,12 @@
 # Website
 
-The vanilla Vite source lives only in `site/`; production output is `dist/`. Use semantic HTML, CSS and vanilla JavaScript; no React, backend, analytics or third-party embeds. Keep essential content and contact links usable without JavaScript, and respect reduced motion. Reserve the left spiral and right pen gutters without covering content. The icon-only play/pause control and system motion preference own all decorative motion.
+The vanilla Vite source lives only in `site/`; production output is `dist/`. Use semantic HTML, CSS and vanilla JavaScript; no React, backend, analytics or third-party embeds. Keep essential content and contact links usable without JavaScript, and respect reduced motion. Reserve the left spiral and right pen gutters. Keep the transparent pen layer above cards and unclipped on phones, with pointer events disabled. The message shortcut links to `#contact`; system motion preference controls decorative motion. Use the locally hosted Patrick Hand font with Romanian diacritics and preserve its bundled license.
 
 Write Romanian copy from verified information. Never invent qualifications, reviews, prices, locations or availability. Clearly label illustration placeholders and unconfirmed logistics.
 
 `personal-info.txt` is private local resource material. Never stage, commit, upload or deploy it. Only expressly approved extracted information may become public content. Stage explicit paths, and deploy only validated, minified `dist/`, never source or the repository root. Keep Vite `root` and `envDir` scoped to `site/`; never import private input. Preserve private files and ignored local state.
 
-Run `npm test`, `npm run build` and `npm run test:dist` for website changes. Verify the production preview with local Playwright: responsive layout, keyboard/no-JS, reduced motion, reversible card slides and pen pointer/touch behavior. The pen writes once after settling plus exactly 5000ms; cancel timers/frame loops on pause, hidden tab or interruption. Use Graphify only on public code, locally and code-only; Reticle stays uninstrumented unless explicitly approved.
+Run `npm test`, `npm run build` and `npm run test:dist` for website changes. Verify the production preview with local Playwright: responsive layout, keyboard/no-JS, reduced motion, bottom-entry/top-exit slides of whole paper panels (including their backgrounds) and pen pointer/touch behavior. Do not nest animated cards or animate paragraphs individually. The pen writes once after settling plus exactly 5000ms; cancel timers/frame loops on reduced motion, hidden tab or interruption. Use Graphify only on public code, locally and code-only; Reticle stays uninstrumented unless explicitly approved.
 
 # Agent toolkit
 

@@ -42,13 +42,18 @@ node tools/agent-toolkit/toolkit.mjs run npm run build
 ## Content and artwork
 
 - `site/index.html`: Romanian copy, native practical questions, Facebook contact
-  and coherent `data-card` motion units. Do not nest animated cards.
+  and six complete `data-card` paper panels (two hero cards and four sections).
+  Animate each panel including its background, not individual text fragments;
+  do not nest animated cards.
 - `site/styles.css`: paper colours, left binding, reserved right pen margin,
   responsive layout and reduced-motion rules.
 - `site/assets/elena-simina.jpg`: permission-confirmed portrait supplied by the owner;
   200×200 pixels, deliberately displayed small rather than enlarged.
 - `site/assets/pen.svg` and `handwriting.svg`: original local pen and handwritten paths.
 - `site/assets/portrait-placeholder.svg`: original notebook artwork, retained as the favicon.
+- `site/assets/patrick-hand-*.woff2`: locally hosted Patrick Hand, including Romanian
+  diacritics. The SIL Open Font License and Lucide message-icon ISC notice are in
+  `site/assets/third-party-licenses.txt`, linked from and included in the build.
 
 No Facebook image URL is requested by visitors. Do not hotlink expiring CDN URLs.
 Obtain permission before replacing a photograph; do not add pupils' photos without
@@ -61,9 +66,10 @@ results, credentials or contact details.
 
 ## Motion contract
 
-`site/motion.js` coordinates replayable card entry/exit and the effective motion state.
-Cards retain layout space, reverse from their current appearance, and become fully
-visible when focused or when motion is paused. Content and questions work without JS.
+`site/motion.js` coordinates replayable card entry/exit. Cards slide in from below
+and fade out upward, regardless of scrolling direction. They retain layout space,
+reverse from their current appearance during interruptions, and become fully
+visible when focused or when reduced motion is enabled. Content and questions work without JS.
 
 `site/pen.js` owns the pen state machine. Mouse movement follows height and tilts
 toward the cursor while staying in the **right** gutter. Touch taps update its
@@ -75,15 +81,16 @@ one phrase, then rests. The phrases rotate between `Cu răbdare.`, `Pas cu pas.`
 geometry. New input interrupts writing; scroll/resize cancels and restarts settling.
 There is no permanent idle animation loop.
 
-The icon-only play/pause button controls decorative motion and has accessible
-action labels. Pausing cancels frame loops, idle timers and writing, reveals all
-cards and parks the pen. Reduced-motion device preferences take priority over the
-button. Hiding the tab suspends activity; resuming never replays a stale timeout.
-The user's pause state is in-memory only, with no local storage.
+The fixed message icon links to the existing Contact section, including without
+JavaScript. There is no play/pause button. Reduced-motion device preferences stop
+decorative motion, cancel frame loops and idle timers, reveal all cards and park
+the pen. Hiding the tab suspends activity; resuming never replays a stale timeout.
+The transparent pen rail sits above the cards without clipping its tilted artwork
+on phones; it never intercepts taps. No preferences are stored.
 
 ## Checks
 
-`npm test` covers source content/privacy, control/card states, reversal, pause and
+`npm test` covers source content/privacy, contact/card states, reversal and
 preference changes, pen lifecycle, exact idle timing and sequential stroke drawing.
 `npm run test:dist` checks the actual built artifact, minification, relative assets,
 absence of source maps and the public-file boundary.

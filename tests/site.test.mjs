@@ -26,11 +26,12 @@ test("Romanian page has landmarks, safe contact and valid navigation", async () 
   assert.ok((html.match(/<details[\s>]/g) ?? []).length >= 3);
 });
 
-test("notebook decorations, coherent cards, portrait and icon-only control are accessible", async () => {
+test("notebook decorations, coherent cards, portrait and contact shortcut are accessible", async () => {
   const html = await read("site/index.html");
   assert.match(html, /class="notebook-binding" aria-hidden="true"/);
   assert.match(html, /class="pen-rail" aria-hidden="true"/);
-  assert.match(html, /class="motion-control"[^>]*aria-label="Oprește animațiile"[^>]*hidden/);
+  assert.match(html, /<a class="contact-shortcut" href="#contact" aria-label="[^"]+"/);
+  assert.doesNotMatch(html, /motion-control|motion-help|pause-icon|play-icon/);
   assert.match(html, /src="assets\/elena-simina\.jpg" width="200" height="200" alt="Elena Simina/);
   assert.match(html, /<script type="module" src="main.js"/);
   const portrait = await readFile(resolve(site, "assets/elena-simina.jpg"));
@@ -38,10 +39,25 @@ test("notebook decorations, coherent cards, portrait and icon-only control are a
   assert.equal(portrait[1], 0xd8);
   assert.equal(portrait.includes(Buffer.from("Exif\0\0")), false, "No embedded EXIF metadata");
   assert.doesNotMatch(html, /data-enter|<p[^>]*data-card/);
-  assert.ok((html.match(/data-card/g) ?? []).length >= 10);
+  assert.equal((html.match(/data-card/g) ?? []).length, 6);
+  for (const section of ["despre", "lectii", "intrebari", "contact"]) {
+    assert.match(html, new RegExp(`<section id="${section}"[^>]* data-card>`));
+  }
   const css = await read("site/styles.css");
   assert.match(css, /prefers-reduced-motion: reduce/);
   assert.match(css, /\.pen-rail\s*\{[^}]*pointer-events:\s*none/);
+  assert.match(css, /\.pen-rail\s*\{[^}]*overflow:\s*visible/);
+  assert.match(css, /\.pen-rail\s*\{[^}]*background:\s*transparent/);
+  assert.match(css, /\.pen-rail\s*\{[^}]*z-index:\s*20/);
+  assert.match(css, /font-family:\s*"Patrick Hand"/);
+  for (const subset of ["latin", "latin-ext"]) {
+    const font = await readFile(resolve(site, `assets/patrick-hand-${subset}.woff2`));
+    assert.equal(font.subarray(0, 4).toString("ascii"), "wOF2");
+    assert.match(css, new RegExp(`patrick-hand-${subset}\\.woff2`));
+  }
+  const licenses = await read("site/assets/third-party-licenses.txt");
+  assert.match(licenses, /SIL OPEN FONT LICENSE Version 1\.1/);
+  assert.match(licenses, /Lucide message-circle icon/);
   assert.match(css, /\[hidden\]\s*\{\s*display:\s*none/);
   assert.doesNotMatch(css, /transition:\s*all/);
 });
@@ -57,7 +73,9 @@ test("local source assets resolve and public source is explicitly bounded", asyn
   }
   const expected = [
     "assets/elena-simina.jpg", "assets/handwriting.svg", "assets/pen.svg",
-    "assets/portrait-placeholder.svg", "index.html", "main.js", "motion.js", "pen.js", "styles.css",
+    "assets/portrait-placeholder.svg", "assets/patrick-hand-latin-ext.woff2",
+    "assets/patrick-hand-latin.woff2", "assets/third-party-licenses.txt",
+    "index.html", "main.js", "motion.js", "pen.js", "styles.css",
   ];
   async function walk(directory) {
     const files = [];
@@ -70,8 +88,8 @@ test("local source assets resolve and public source is explicitly bounded", asyn
     }
     return files;
   }
-  assert.deepEqual((await walk(site)).sort(), expected);
-  for (const file of expected.filter(path => !path.endsWith(".jpg"))) {
+  assert.deepEqual((await walk(site)).sort(), expected.sort());
+  for (const file of expected.filter(path => !/\.(jpg|woff2)$/.test(path))) {
     assert.doesNotMatch(await readFile(resolve(site, file), "utf8"), /personal-info\.txt|NOTION_TOKEN|\.env\.private|fbcdn\.net|reticle/i);
   }
   assert.equal(execFileSync("git", ["ls-files", "--", "personal-info.txt"], { cwd: root, encoding: "utf8" }), "");

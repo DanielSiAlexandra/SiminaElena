@@ -1,16 +1,3 @@
-export function createMotionState(reduced, change) {
-  let paused = false;
-  let systemReduced = reduced;
-  const notify = () => change(!paused && !systemReduced);
-  notify();
-  return {
-    get enabled() { return !paused && !systemReduced; },
-    get reduced() { return systemReduced; },
-    toggle() { if (!systemReduced) paused = !paused; notify(); },
-    setReduced(value) { systemReduced = value; notify(); },
-  };
-}
-
 export function createCardMotion(elements, {
   observe = typeof IntersectionObserver === "undefined" ? null : callback => new IntersectionObserver(callback, {
     rootMargin: "-5% 0px -5% 0px", threshold: 0,
@@ -19,7 +6,7 @@ export function createCardMotion(elements, {
   activeElement = () => document.activeElement,
   narrow = () => window.innerWidth < 650,
 } = {}) {
-  const records = new Map(elements.map((element, index) => [element, { index, animation: null }]));
+  const records = new Map(elements.map(element => [element, { animation: null }]));
   let observer;
   let enabled = false;
   let generation = 0;
@@ -34,7 +21,7 @@ export function createCardMotion(elements, {
     element.dataset.motionState = "visible";
   }
 
-  function transition(element, entering, top) {
+  function transition(element, entering) {
     const record = records.get(element);
     if (!record) return;
     if (element.contains(activeElement())) { reveal(element); return; }
@@ -43,16 +30,14 @@ export function createCardMotion(elements, {
         (!entering && (state === "exiting" || state === "outside"))) return;
     if (typeof element.animate !== "function") { reveal(element); return; }
     const style = computed(element);
-    const distance = narrow() ? 20 : 48;
-    const sign = (record.index % 2 ? 1 : -1) * (top < 0 ? -1 : 1);
-    const outside = `translate(${sign * distance}px, ${top < 0 ? -10 : 10}px)`;
-    const initial = !state && entering
-      ? { transform: outside, opacity: 0.15 }
+    const distance = narrow() ? 24 : 48;
+    const initial = entering && (!state || state === "outside")
+      ? { transform: `translateY(${distance}px)`, opacity: 0 }
       : { transform: style.transform, opacity: style.opacity };
     record.animation?.cancel();
     const final = entering
-      ? { transform: "translate(0px, 0px)", opacity: 1 }
-      : { transform: outside, opacity: 0.15 };
+      ? { transform: "translateY(0px)", opacity: 1 }
+      : { transform: `translateY(-${distance}px)`, opacity: 0 };
     element.style.transform = final.transform;
     element.style.opacity = String(final.opacity);
     element.dataset.motionState = entering ? "entering" : "exiting";
@@ -80,7 +65,7 @@ export function createCardMotion(elements, {
     if (!enabled) return;
     observer = observe(entries => {
       if (!enabled || current !== generation) return;
-      for (const entry of entries) transition(entry.target, entry.isIntersecting, entry.boundingClientRect.top);
+      for (const entry of entries) transition(entry.target, entry.isIntersecting);
     });
     for (const element of records.keys()) observer.observe(element);
   }
