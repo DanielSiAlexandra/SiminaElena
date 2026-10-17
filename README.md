@@ -66,38 +66,39 @@ results, credentials or contact details.
 
 ## Motion contract
 
-The six panels are pinned sticky notes: nearly square paper corners, a small fold,
-soft lifted-paper shadows and generous gutters. The palette follows the established
-cream–sage–forest/ochre scheme, using **60/30/10 as an approximate visual hierarchy**:
-neutral notebook/paper dominates, sage surfaces support it, forest and ochre focus
-attention on contact/actions. Coverage naturally varies with viewport and content;
-do not randomize note backgrounds or add a rainbow of competing accents.
+The six panels are realistic lime sticky notes: a lighter adhesive band at the top,
+a curled lower-right corner with its lighter underside and a soft lifted shadow.
+Each note has a slight fixed tilt. The palette is lime notes on the neutral
+notebook ground, with forest ink/buttons and small pin accents. **60/30/10 is an
+approximate visual hierarchy**, not an exact measured coverage. Do not randomize
+note backgrounds.
 
-Each note gets one decorative inline-SVG pushpin. `createCardMotion` selects from
-sage (`#78967b`), ochre (`#b18733`) and muted clay (`#a26855`) once on initialization,
-not on every entrance. The pin appears only after landing, with a 220ms placement,
-and is removed during travel. Pin colours are stable across scrolling, reduced-motion
-changes and hidden-tab suspension. Pins are static and visible without JavaScript
-or with reduced motion, excluded from accessibility/navigation, and never block taps.
-Notes stay straight to preserve readable text and stable scroll geometry.
+Each note gets one glossy decorative inline-SVG pushpin. `createCardMotion` picks
+forest (`#2f6b52`), ochre (`#d29a2a`) or red (`#cf3a2e`) once on initialization,
+not on every entrance. After the note lands, the pin drops in from above, presses
+into the paper and springs back (`pin-press`, 620ms). It is hidden during travel.
+Pin colours stay stable across scrolling, reduced-motion changes and hidden-tab
+suspension. Pins are static and visible without JavaScript or with reduced motion,
+excluded from accessibility/navigation, and never block taps.
 Section contents stack below 900px so tablet notes do not squeeze body copy into
 narrow columns; the hero stacks below 650px.
 
-`site/motion.js` coordinates replayable card entry/exit. Cards slide in from below
-and fade out upward, regardless of scrolling direction. They retain layout space,
-reverse from their current appearance during interruptions, and become fully
-visible when focused or when reduced motion is enabled. Content and questions work without JS.
+`site/motion.js` coordinates replayable card entry/exit. Cards hinge on their top
+edge like a page: they flip down into view (`rotateX(-88deg)` → slight overshoot →
+flat) and fold back up on exit, regardless of scrolling direction. They retain
+layout space, reverse from their current appearance during interruptions, and become
+fully visible when focused or when reduced motion is enabled. Content and questions
+work without JS.
 
-Card triggers use **untransformed layout bounds**, not an IntersectionObserver on
+Card triggers use **untransformed offset geometry** (`offsetTop`/`offsetHeight`, unaffected by 3D flips or tilts), not an IntersectionObserver on
 the moving panel. Scroll/resize measurements are batched into one requested frame;
 ResizeObserver also handles font/content reflow. No frame loop runs when idle.
 Separate viewport bands prevent edge chatter: enter when the top is above 82%
 and the bottom below 28% of viewport height; exit only when the top passes 98%
 or the bottom passes above 18%.
-The complete paper panels travel **80px on phones / 120px on larger screens**,
-with **1000ms entry / 750ms exit** and `cubic-bezier(0.25, 0.1, 0.25, 1)`.
-The earlier exit starts while a visible portion remains, so its upward movement
-can be seen rather than occurring after the card has left the screen.
+The flip lasts **1000ms on entry / 750ms on exit** in `perspective(2000px)`. The
+earlier exit starts while a visible portion remains, so the fold can be seen
+before the card leaves the screen.
 
 `site/pen.js` owns the pen state machine. Mouse movement follows height and tilts
 toward the cursor while staying in the **right** gutter. Touch taps update its

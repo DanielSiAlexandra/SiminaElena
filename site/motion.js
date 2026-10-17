@@ -20,21 +20,32 @@ function watchCards(change, elements) {
   };
 }
 
+const FOLDED = { transform: "perspective(2000px) rotateX(-88deg)", opacity: 0 };
+const FLAT = { transform: "perspective(2000px) rotateX(0deg)", opacity: 1 };
+// Hinged at the adhesive top edge: the page swings down, slightly overshoots, then lies flat.
+const FLIP_DOWN = [
+  FOLDED,
+  { transform: "perspective(2000px) rotateX(-55deg)", opacity: 1, offset: 0.3 },
+  { transform: "perspective(2000px) rotateX(5deg)", offset: 0.72 },
+  { transform: "perspective(2000px) rotateX(-1.5deg)", offset: 0.88 },
+  FLAT,
+];
+
 export function createCardMotion(elements, {
-  watch = typeof window === "undefined" || typeof DOMMatrixReadOnly === "undefined" ? null : watchCards,
+  watch = typeof window === "undefined" ? null : watchCards,
   bounds = element => {
-    const rect = element.getBoundingClientRect();
-    // Remove our translation so animation cannot move its own scroll trigger.
-    const y = new DOMMatrixReadOnly(getComputedStyle(element).transform).m42;
-    return { top: rect.top - y, bottom: rect.bottom - y };
+    // Offsets ignore transforms, so a flipping note cannot move its own scroll trigger.
+    let top = 0;
+    for (let node = element; node; node = node.offsetParent) top += node.offsetTop;
+    top -= window.scrollY;
+    return { top, bottom: top + element.offsetHeight };
   },
   viewport = () => window.innerHeight,
   computed = element => getComputedStyle(element),
   activeElement = () => document.activeElement,
-  narrow = () => window.innerWidth < 650,
   random = Math.random,
 } = {}) {
-  const pinTones = ["sage", "ochre", "clay"];
+  const pinTones = ["forest", "ochre", "red"];
   const records = new Map(elements.map(element => {
     element.dataset.pinTone = pinTones[Math.floor(random() * pinTones.length)];
     return [element, { animation: null }];
@@ -62,20 +73,17 @@ export function createCardMotion(elements, {
         (!entering && (state === "exiting" || state === "outside"))) return;
     if (typeof element.animate !== "function") { reveal(element); return; }
     const style = computed(element);
-    const distance = narrow() ? 80 : 120;
-    const initial = entering && (!state || state === "outside")
-      ? { transform: `translateY(${distance}px)`, opacity: 0 }
-      : { transform: style.transform, opacity: style.opacity };
+    const fresh = entering && (!state || state === "outside");
+    const current = { transform: style.transform, opacity: style.opacity };
     record.animation?.cancel();
-    const final = entering
-      ? { transform: "translateY(0px)", opacity: 1 }
-      : { transform: `translateY(-${distance}px)`, opacity: 0 };
+    const final = entering ? FLAT : FOLDED;
     element.style.transform = final.transform;
     element.style.opacity = String(final.opacity);
     element.dataset.motionState = entering ? "entering" : "exiting";
-    const animation = element.animate([initial, final], {
+    const frames = fresh ? FLIP_DOWN : [current, final];
+    const animation = element.animate(frames, {
       duration: entering ? 1000 : 750,
-      easing: "cubic-bezier(0.25, 0.1, 0.25, 1)",
+      easing: entering ? "cubic-bezier(0.3, 0.6, 0.35, 1)" : "cubic-bezier(0.55, 0, 0.8, 0.45)",
     });
     record.animation = animation;
     animation.onfinish = () => {
@@ -112,7 +120,7 @@ export function createCardMotion(elements, {
           ? bottom > height * 0.18 && top < height * 0.98
           : bottom > height * 0.28 && top < height * 0.82;
         if (!state && !inside) {
-          element.style.transform = `translateY(${(top > 0 ? 1 : -1) * (narrow() ? 80 : 120)}px)`;
+          element.style.transform = FOLDED.transform;
           element.style.opacity = "0";
           element.dataset.motionState = "outside";
         } else {

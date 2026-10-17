@@ -2,6 +2,9 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { createCardMotion } from "../site/motion.js";
 
+const folded = { transform: "perspective(2000px) rotateX(-88deg)", opacity: 0 };
+const flat = { transform: "perspective(2000px) rotateX(0deg)", opacity: 1 };
+
 function fixture({ narrow = false, focused = false, random = () => 0.5 } = {}) {
   const animations = [];
   const element = {
@@ -35,7 +38,7 @@ function fixture({ narrow = false, focused = false, random = () => 0.5 } = {}) {
 }
 
 test("pushpins select only curated colours once, remaining stable across motion restarts", () => {
-  for (const [value, expected] of [[0, "sage"], [0.34, "ochre"], [0.99, "clay"]]) {
+  for (const [value, expected] of [[0, "forest"], [0.34, "ochre"], [0.99, "red"]]) {
     let calls = 0;
     const f = fixture({ random: () => { calls++; return value; } });
     assert.equal(f.element.dataset.pinTone, expected);
@@ -59,7 +62,9 @@ test("edge trigger has hysteresis and ignores the card's animated appearance", (
   f.move(810);
   assert.equal(f.element.dataset.motionState, "entering");
   const entry = f.animations[0];
-  assert.deepEqual(entry.frames[0], { transform: "translateY(120px)", opacity: 0 });
+  assert.deepEqual(entry.frames[0], folded, "Notes flip down from their top edge");
+  assert.deepEqual(entry.frames.at(-1), flat);
+  assert.ok(entry.frames.some(frame => /rotateX\([1-9]/.test(frame.transform ?? "")), "Paper settles past flat before landing");
   assert.equal(entry.options.duration, 1000);
   f.appearance({ transform: "matrix(1, 0, 0, 1, 0, 115)", opacity: "0.05" });
   for (const top of [815, 825, 840, 830, 819]) f.move(top);
@@ -69,7 +74,7 @@ test("edge trigger has hysteresis and ignores the card's animated appearance", (
   assert.equal(f.element.dataset.motionState, "visible");
   f.move(981);
   assert.equal(f.element.dataset.motionState, "exiting");
-  assert.deepEqual(f.animations.at(-1).frames[1], { transform: "translateY(-120px)", opacity: 0 });
+  assert.deepEqual(f.animations.at(-1).frames.at(-1), folded, "Exit flips the page back up");
   assert.equal(f.animations.at(-1).options.duration, 750);
   f.animations.at(-1).onfinish();
   f.move(300);
@@ -104,7 +109,7 @@ test("reversal captures current appearance and rejects stale completion", () => 
   assert.equal(f.element.style.transform, "");
 });
 
-test("completed exits re-enter from below at either edge and oversized cards remain visible", () => {
+test("completed exits flip back in at either edge and oversized cards remain visible", () => {
   const f = fixture({ narrow: true });
   f.controller.setEnabled(true);
   for (const [top, bottom] of [[-250, 50], [990, 1290]]) {
@@ -114,7 +119,7 @@ test("completed exits re-enter from below at either edge and oversized cards rem
     f.animations.at(-1).onfinish();
     assert.equal(f.element.dataset.motionState, "outside");
     f.move(top < 0 ? -100 : 800, top < 0 ? 320 : 1100);
-    assert.deepEqual(f.animations.at(-1).frames[0], { transform: "translateY(80px)", opacity: 0 });
+    assert.deepEqual(f.animations.at(-1).frames[0], folded);
     f.animations.at(-1).onfinish();
   }
   f.move(-100, 3000);

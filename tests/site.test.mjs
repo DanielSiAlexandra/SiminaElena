@@ -52,7 +52,9 @@ test("notebook decorations, coherent cards, portrait and contact shortcut are ac
   assert.match(css, /\.pen-rail\s*\{[^}]*background:\s*transparent/);
   assert.match(css, /\.pen-rail\s*\{[^}]*z-index:\s*20/);
   assert.match(css, /font-family:\s*"Patrick Hand"/);
-  assert.match(css, /--note-sage:\s*#d6dfcf/i);
+  assert.match(css, /--note-green:\s*#d9ee95/i);
+  assert.match(css, /\[data-card\]\s*\{[^}]*transform-origin:\s*50% 0/);
+  assert.match(css, /@keyframes pin-press/);
   assert.match(css, /\[data-motion-state="entering"\][^]*?\.note-pin/);
   assert.match(css, /\.note-pin\s*\{[^}]*pointer-events:\s*none/);
   assert.match(css, /@media \(max-width: 900px\)(?:(?!@media)[^])*\.about, \.lessons, \.questions, \.contact \{ grid-template-columns: 1fr;/);
