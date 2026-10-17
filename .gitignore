@@ -1,4 +1,5 @@
 .env.private
+/personal-info.txt
 docs/notion/node_modules/
 .notion-sync-state.json
 .notion-sync-state.json.*.tmp
