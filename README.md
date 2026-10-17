@@ -84,11 +84,16 @@ excluded from accessibility/navigation, and never block taps.
 Section contents stack below 900px so tablet notes do not squeeze body copy into
 narrow columns; the hero stacks below 650px.
 
-`site/motion.js` coordinates replayable card entry/exit as a **page turn hinged at the
-left spiral**: `perspective(1800px) rotateY(84deg) skewY(-8deg)` → curling frames →
-slight overshoot → flat, and back to the turned-away pose on exit (vanilla Web
-Animations, no page-flip library). A CSS `page-curl` light/shadow band sweeps across
-the paper during the turn. Cards retain layout space, reverse from their current
+`site/motion.js` coordinates replayable card entry/exit as a **book page turn over
+the left spiral, always right to left**. On entry a blank cover sheet
+(`.page-cover`, same note colour, decorative and hidden without JS) lies on the note
+and turns away: `rotateY(0 → -180deg)` around its left edge with
+`backface-visibility: hidden` and `cubic-bezier(0.25, 1, 0.5, 1)`, revealing the
+note underneath. On exit the note itself turns over the spiral the same way.
+Perspective scales with the note width (at least 1200px, three times the width)
+so wide desktop notes don't balloon toward the viewer. Vanilla Web Animations; no
+page-flip library (turn.js needs jQuery and StPageFlip is a flipbook viewer, not a
+scroll-triggered card effect). Cards retain layout space, reverse from their current
 appearance during interruptions, and become fully visible when focused or when
 reduced motion is enabled. Content and questions work without JS.
 
@@ -98,7 +103,7 @@ ResizeObserver also handles font/content reflow. No frame loop runs when idle.
 Separate viewport bands prevent edge chatter: enter when the top is above 82%
 and the bottom below 28% of viewport height; exit only when the top passes 98%
 or the bottom passes above 18%.
-The turn lasts **1000ms on entry / 750ms on exit**. The
+The turn lasts **1200ms on entry / 900ms on exit** (exit eases in and out). The
 earlier exit starts while a visible portion remains, so the turn can be seen
 before the card leaves the screen.
 

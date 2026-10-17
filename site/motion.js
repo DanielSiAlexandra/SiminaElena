@@ -20,16 +20,20 @@ function watchCards(change, elements) {
   };
 }
 
-const FOLDED = { transform: "perspective(1800px) rotateY(84deg) skewY(-8deg)", opacity: 0 };
-const FLAT = { transform: "perspective(1800px) rotateY(0deg) skewY(0deg)", opacity: 1 };
-// Hinged at the left spiral: the page turns in with a curl (skew), overshoots slightly, then lies flat.
-const PAGE_TURN = [
-  FOLDED,
-  { transform: "perspective(1800px) rotateY(55deg) skewY(-6deg)", opacity: 1, offset: 0.3 },
-  { transform: "perspective(1800px) rotateY(14deg) skewY(-2deg)", offset: 0.68 },
-  { transform: "perspective(1800px) rotateY(-3deg) skewY(0.5deg)", offset: 0.86 },
-  FLAT,
-];
+// Book-style turn around the left spiral; pages always travel right-to-left (negative rotateY).
+// Depth scales with the note width so wide desktop notes don't balloon toward the viewer mid-turn.
+const BOOK_EASING = "cubic-bezier(0.25, 1, 0.5, 1)";
+function turnFrames(element) {
+  const depth = Math.max(1200, Math.round((element.offsetWidth || 0) * 3));
+  const at = angle => `perspective(${depth}px) rotateY(${angle}deg)`;
+  return {
+    turned: { transform: at(-180), opacity: 0 },
+    flat: { transform: at(0), opacity: 1 },
+    entry: [{ transform: at(0), opacity: 0 }, { opacity: 1, offset: 0.12 }, { transform: at(0), opacity: 1 }],
+    // A blank cover page lies on the note and turns away over the spiral, revealing it.
+    cover: [{ transform: at(0) }, { transform: at(-180) }],
+  };
+}
 
 export function createCardMotion(elements, {
   watch = typeof window === "undefined" ? null : watchCards,
@@ -48,7 +52,7 @@ export function createCardMotion(elements, {
   const pinTones = ["sage", "ochre", "clay"];
   const records = new Map(elements.map(element => {
     element.dataset.pinTone = pinTones[Math.floor(random() * pinTones.length)];
-    return [element, { animation: null }];
+    return [element, { animation: null, cover: null }];
   }));
   let stopWatching;
   let enabled = false;
@@ -59,6 +63,8 @@ export function createCardMotion(elements, {
     if (!record) return;
     record.animation?.cancel();
     record.animation = null;
+    record.cover?.cancel();
+    record.cover = null;
     element.style.transform = "";
     element.style.opacity = "";
     element.dataset.motionState = "visible";
@@ -76,15 +82,20 @@ export function createCardMotion(elements, {
     const fresh = entering && (!state || state === "outside");
     const current = { transform: style.transform, opacity: style.opacity };
     record.animation?.cancel();
-    const final = entering ? FLAT : FOLDED;
+    const frames = turnFrames(element);
+    const final = entering ? frames.flat : frames.turned;
     element.style.transform = final.transform;
     element.style.opacity = String(final.opacity);
     element.dataset.motionState = entering ? "entering" : "exiting";
-    const frames = fresh ? PAGE_TURN : [current, final];
-    const animation = element.animate(frames, {
-      duration: entering ? 1000 : 750,
-      easing: entering ? "cubic-bezier(0.3, 0.6, 0.35, 1)" : "cubic-bezier(0.55, 0, 0.8, 0.45)",
+    const animation = element.animate(fresh ? frames.entry : [current, final], {
+      duration: entering ? 1200 : 900,
+      easing: entering ? BOOK_EASING : "cubic-bezier(0.45, 0, 0.55, 1)",
     });
+    if (fresh) {
+      const cover = element.querySelector?.(":scope > .page-cover");
+      record.cover?.cancel();
+      record.cover = cover?.animate(frames.cover, { duration: 1200, easing: BOOK_EASING, fill: "forwards" }) ?? null;
+    }
     record.animation = animation;
     animation.onfinish = () => {
       if (record.animation !== animation) return;
@@ -120,7 +131,7 @@ export function createCardMotion(elements, {
           ? bottom > height * 0.18 && top < height * 0.98
           : bottom > height * 0.28 && top < height * 0.82;
         if (!state && !inside) {
-          element.style.transform = FOLDED.transform;
+          element.style.transform = turnFrames(element).turned.transform;
           element.style.opacity = "0";
           element.dataset.motionState = "outside";
         } else {

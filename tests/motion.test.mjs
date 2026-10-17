@@ -2,13 +2,24 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { createCardMotion } from "../site/motion.js";
 
-const folded = { transform: "perspective(1800px) rotateY(84deg) skewY(-8deg)", opacity: 0 };
-const flat = { transform: "perspective(1800px) rotateY(0deg) skewY(0deg)", opacity: 1 };
+// Book-style turn around the left spiral: pages always travel right-to-left (negative rotateY).
+const turned = { transform: "perspective(1200px) rotateY(-180deg)", opacity: 0 };
+const flat = { transform: "perspective(1200px) rotateY(0deg)", opacity: 1 };
+const covered = { transform: "perspective(1200px) rotateY(0deg)", opacity: 0 };
 
-function fixture({ narrow = false, focused = false, random = () => 0.5 } = {}) {
+function fixture({ narrow = false, focused = false, random = () => 0.5, cover = false } = {}) {
   const animations = [];
+  const coverAnimations = [];
+  const coverElement = {
+    animate(frames, options) {
+      const animation = { frames, options, cancel() { this.cancelled = true; } };
+      coverAnimations.push(animation);
+      return animation;
+    },
+  };
   const element = {
     style: {}, dataset: {},
+    ...(cover ? { querySelector: selector => selector === ":scope > .page-cover" ? coverElement : null } : {}),
     contains: () => focused,
     animate(frames, options) {
       const animation = { frames, options, cancel() { this.cancelled = true; } };
@@ -30,7 +41,7 @@ function fixture({ narrow = false, focused = false, random = () => 0.5 } = {}) {
     random,
   });
   return {
-    controller, element, animations, callbacks,
+    controller, element, animations, coverAnimations, callbacks,
     move(top, bottom = top + 300) { box = { top, bottom }; callbacks.at(-1)(); },
     appearance(value) { appearance = value; },
     get disconnected() { return disconnected; },
@@ -62,11 +73,9 @@ test("edge trigger has hysteresis and ignores the card's animated appearance", (
   f.move(810);
   assert.equal(f.element.dataset.motionState, "entering");
   const entry = f.animations[0];
-  assert.deepEqual(entry.frames[0], folded, "Notes turn in like a page hinged at the spiral");
+  assert.deepEqual(entry.frames[0], covered, "Covered note fades in flat while its cover page turns");
   assert.deepEqual(entry.frames.at(-1), flat);
-  assert.ok(entry.frames.some(frame => /rotateY\(-[1-9]/.test(frame.transform ?? "")), "Page settles past flat before landing");
-  assert.ok(entry.frames.slice(1, -1).every(frame => /skewY\(-[1-9]/.test(frame.transform) || /rotateY\(-/.test(frame.transform)), "Paper curls while turning");
-  assert.equal(entry.options.duration, 1000);
+  assert.equal(entry.options.duration, 1200);
   f.appearance({ transform: "matrix(1, 0, 0, 1, 0, 115)", opacity: "0.05" });
   for (const top of [815, 825, 840, 830, 819]) f.move(top);
   assert.equal(f.animations.length, 1, "Boundary jitter must not restart animation");
@@ -75,8 +84,8 @@ test("edge trigger has hysteresis and ignores the card's animated appearance", (
   assert.equal(f.element.dataset.motionState, "visible");
   f.move(981);
   assert.equal(f.element.dataset.motionState, "exiting");
-  assert.deepEqual(f.animations.at(-1).frames.at(-1), folded, "Exit flips the page back up");
-  assert.equal(f.animations.at(-1).options.duration, 750);
+  assert.deepEqual(f.animations.at(-1).frames.at(-1), turned, "Exit turns the note over the spiral, right to left");
+  assert.equal(f.animations.at(-1).options.duration, 900);
   f.animations.at(-1).onfinish();
   f.move(300);
   f.animations.at(-1).onfinish();
@@ -88,6 +97,24 @@ test("edge trigger has hysteresis and ignores the card's animated appearance", (
   assert.equal(f.animations.length, count, "Top edge jitter must not reverse an exit");
   f.move(-100, 290);
   assert.equal(f.element.dataset.motionState, "entering");
+});
+
+test("entry turns a cover page right-to-left over the spiral like a book", () => {
+  const f = fixture({ cover: true });
+  f.controller.setEnabled(true);
+  f.move(800);
+  const page = f.coverAnimations.at(-1);
+  assert.ok(page, "Cover page animates on a fresh entry");
+  assert.equal(page.frames[0].transform, "perspective(1200px) rotateY(0deg)");
+  assert.equal(page.frames.at(-1).transform, "perspective(1200px) rotateY(-180deg)");
+  assert.ok(page.frames.every(frame => !/rotateY\([1-9]/.test(frame.transform)), "Never turns left-to-right");
+  assert.equal(page.options.duration, 1200);
+  assert.equal(page.options.easing, "cubic-bezier(0.25, 1, 0.5, 1)");
+  f.animations.at(-1).onfinish();
+  f.move(990);
+  assert.equal(f.coverAnimations.length, 1, "Exit turns the note itself, not the cover back");
+  f.controller.setEnabled(false);
+  assert.ok(page.cancelled, "Disabling motion removes the cover page animation");
 });
 
 test("reversal captures current appearance and rejects stale completion", () => {
@@ -120,7 +147,7 @@ test("completed exits flip back in at either edge and oversized cards remain vis
     f.animations.at(-1).onfinish();
     assert.equal(f.element.dataset.motionState, "outside");
     f.move(top < 0 ? -100 : 800, top < 0 ? 320 : 1100);
-    assert.deepEqual(f.animations.at(-1).frames[0], folded);
+    assert.deepEqual(f.animations.at(-1).frames[0], covered);
     f.animations.at(-1).onfinish();
   }
   f.move(-100, 3000);

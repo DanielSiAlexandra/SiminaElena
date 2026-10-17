@@ -55,7 +55,11 @@ test("notebook decorations, coherent cards, portrait and contact shortcut are ac
   for (const tone of ["yellow", "pink", "blue"]) assert.match(css, new RegExp(`--note-${tone}:\\s*#`));
   assert.doesNotMatch(css, /--note-green/);
   assert.match(css, /\[data-card\]\s*\{[^}]*transform-origin:\s*0 50%/);
-  assert.match(css, /@keyframes page-curl/);
+  assert.doesNotMatch(css, /page-curl/);
+  assert.match(css, /\.page-cover\s*\{[^}]*transform-origin:\s*left center/);
+  assert.match(css, /\.page-cover\s*\{[^}]*backface-visibility:\s*hidden/);
+  assert.match(css, /\.page-cover\s*\{[^}]*display:\s*none/, "Cover is hidden without JS");
+  assert.equal((html.match(/class="page-cover" aria-hidden="true"/g) ?? []).length, 6);
   assert.match(css, /@keyframes pin-press/);
   assert.match(css, /\[data-motion-state="entering"\][^]*?\.note-pin/);
   assert.match(css, /\.note-pin\s*\{[^}]*pointer-events:\s*none/);
