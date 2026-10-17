@@ -8,6 +8,8 @@ Write Romanian copy from verified information. Never invent qualifications, revi
 
 Run `npm test`, `npm run build` and `npm run test:dist` for website changes. Verify the production preview with local Playwright: responsive layout, keyboard/no-JS, reduced motion, bottom-entry/top-exit slides of whole paper panels (including their backgrounds) and pen pointer/touch behavior. Do not nest animated cards or animate paragraphs individually. The pen writes once after settling plus exactly 5000ms; cancel timers/frame loops on reduced motion, hidden tab or interruption. Use Graphify only on public code, locally and code-only; Reticle stays uninstrumented unless explicitly approved.
 
+Card scroll triggers must use untransformed layout geometry and separate entry/exit bands; never observe the moving panel's intersection as its own animation trigger. Batch measurements on scroll/resize/reflow; no idle frame loop. Preserve the deliberate 80px phone / 120px desktop travel and 1000ms entry / 750ms exit unless changing the motion brief. Check stationary positions near both viewport edges as well as fast reversals.
+
 # Agent toolkit
 
 In a new checkout, run the toolkit's `setup` before `run copilot`/`run claude`; ignored local dependencies are not inherited from the template. The launcher validates prerequisites and regenerates its local bootstrap without switching profiles.

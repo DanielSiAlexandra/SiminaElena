@@ -71,6 +71,17 @@ and fade out upward, regardless of scrolling direction. They retain layout space
 reverse from their current appearance during interruptions, and become fully
 visible when focused or when reduced motion is enabled. Content and questions work without JS.
 
+Card triggers use **untransformed layout bounds**, not an IntersectionObserver on
+the moving panel. Scroll/resize measurements are batched into one requested frame;
+ResizeObserver also handles font/content reflow. No frame loop runs when idle.
+Separate viewport bands prevent edge chatter: enter when the top is above 82%
+and the bottom below 28% of viewport height; exit only when the top passes 98%
+or the bottom passes above 18%.
+The complete paper panels travel **80px on phones / 120px on larger screens**,
+with **1000ms entry / 750ms exit** and `cubic-bezier(0.25, 0.1, 0.25, 1)`.
+The earlier exit starts while a visible portion remains, so its upward movement
+can be seen rather than occurring after the card has left the screen.
+
 `site/pen.js` owns the pen state machine. Mouse movement follows height and tilts
 toward the cursor while staying in the **right** gutter. Touch taps update its
 height; scroll gestures do not become taps. The normal cursor and links are unchanged.
