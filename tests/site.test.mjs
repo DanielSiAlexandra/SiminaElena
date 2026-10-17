@@ -153,3 +153,10 @@ test("Pages workflow validates before publishing only the public directory", asy
     assert.match(action, /^[\w/-]+@[a-f0-9]{40}(?:\s+#.*)?$/);
   }
 });
+
+test("illustration caption has an opaque contrast-safe backing over artwork", async () => {
+  const css = await read("site/styles.css");
+  const caption = css.match(/\.hero-picture figcaption\s*\{([^}]+)\}/)?.[1];
+  assert.match(caption, /color:\s*var\(--light\)/);
+  assert.match(caption, /background:\s*var\(--green\)/);
+});

@@ -100,8 +100,10 @@ h1 { font-size: clamp(3.4rem, 6.5vw, 5.5rem); }
 .hero-picture img { width: 100%; height: 100%; object-fit: cover; }
 .hero-picture figcaption {
   position: absolute;
-  inset: auto 20px 18px;
+  inset: auto 0 0;
+  padding: 12px 20px;
   color: var(--light);
+  background: var(--green);
   font-size: 0.85rem;
   line-height: 1.5;
   text-align: center;
@@ -163,7 +165,6 @@ details p { margin-top: 18px; }
   .hero .button { margin-top: 26px; }
   .hero-picture { height: 360px; border-radius: 22px 3px 3px 3px; }
   .hero-picture img { object-position: 50% 48%; }
-  .hero-picture figcaption { font-size: 0.85rem; inset-inline: 24px; }
   .section-space { padding: 68px 26px; }
   .about, .lessons, .questions, .contact { grid-template-columns: 1fr; gap: 38px; }
   .about { margin-top: 12px; }
