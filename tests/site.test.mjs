@@ -40,6 +40,8 @@ test("notebook decorations, coherent cards, portrait and contact shortcut are ac
   assert.equal(portrait.includes(Buffer.from("Exif\0\0")), false, "No embedded EXIF metadata");
   assert.doesNotMatch(html, /data-enter|<p[^>]*data-card/);
   assert.equal((html.match(/data-card/g) ?? []).length, 6);
+  assert.equal((html.match(/class="note-pin"[^>]*aria-hidden="true"/g) ?? []).length, 6);
+  assert.equal((html.match(/<use href="#pushpin"/g) ?? []).length, 6);
   for (const section of ["despre", "lectii", "intrebari", "contact"]) {
     assert.match(html, new RegExp(`<section id="${section}"[^>]* data-card>`));
   }
@@ -50,6 +52,10 @@ test("notebook decorations, coherent cards, portrait and contact shortcut are ac
   assert.match(css, /\.pen-rail\s*\{[^}]*background:\s*transparent/);
   assert.match(css, /\.pen-rail\s*\{[^}]*z-index:\s*20/);
   assert.match(css, /font-family:\s*"Patrick Hand"/);
+  assert.match(css, /--note-sage:\s*#d6dfcf/i);
+  assert.match(css, /\[data-motion-state="entering"\][^]*?\.note-pin/);
+  assert.match(css, /\.note-pin\s*\{[^}]*pointer-events:\s*none/);
+  assert.match(css, /@media \(max-width: 900px\)(?:(?!@media)[^])*\.about, \.lessons, \.questions, \.contact \{ grid-template-columns: 1fr;/);
   for (const subset of ["latin", "latin-ext"]) {
     const font = await readFile(resolve(site, `assets/patrick-hand-${subset}.woff2`));
     assert.equal(font.subarray(0, 4).toString("ascii"), "wOF2");

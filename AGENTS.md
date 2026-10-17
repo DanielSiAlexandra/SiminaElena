@@ -10,6 +10,8 @@ Run `npm test`, `npm run build` and `npm run test:dist` for website changes. Ver
 
 Card scroll triggers must use untransformed layout geometry and separate entry/exit bands; never observe the moving panel's intersection as its own animation trigger. Batch measurements on scroll/resize/reflow; no idle frame loop. Preserve the deliberate 80px phone / 120px desktop travel and 1000ms entry / 750ms exit unless changing the motion brief. Check stationary positions near both viewport edges as well as fast reversals.
 
+Keep the pinned-sticky-note language and coherent cream/sage/forest–ochre palette with approximate 60/30/10 hierarchy, not random note colours. Decorative pins choose once per page from sage, ochre and clay; show only after landing and hide during travel. They remain static/visible without JS or with reduced motion. Do not rotate whole notes: the motion geometry assumes translation only. Pin SVG/folds/shadows are deliberate user-requested exceptions to generic no-decoration guidance.
+
 # Agent toolkit
 
 In a new checkout, run the toolkit's `setup` before `run copilot`/`run claude`; ignored local dependencies are not inherited from the template. The launcher validates prerequisites and regenerates its local bootstrap without switching profiles.

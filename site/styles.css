@@ -18,6 +18,11 @@
   color-scheme: light;
   --paper: #f7f4ec;
   --page: #e7e9df;
+  --note-sage: #d6dfcf;
+  --note-fold: #ded8c4;
+  --pin-sage: #78967b;
+  --pin-ochre: #b18733;
+  --pin-clay: #a26855;
   --ink: #233e34;
   --green: #244c40;
   --light: #fcfaf4;
@@ -142,16 +147,57 @@ nav a, .site-footer a { display: inline-flex; align-items: center; min-height: 4
 nav a { text-decoration: none; }
 nav a:hover { text-decoration: underline; }
 main { max-width: 1560px; margin-inline: auto; }
-.hero { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 0 16px; }
+.note-art { position: absolute; pointer-events: none; }
+[data-card] {
+  position: relative;
+  border-radius: 2px;
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 0 3px 2px #233e340a, 0 12px 18px -14px #233e3440; /* taste-skill-ignore: User-requested lifted sticky-note paper. */
+}
+[data-card]::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 24px;
+  height: 24px;
+  background: var(--note-fold);
+  clip-path: polygon(0 0, 100% 100%, 0 100%);
+  pointer-events: none;
+}
+.note-pin {
+  position: absolute;
+  z-index: 1;
+  top: 9px;
+  left: calc(50% - 20px);
+  width: 40px;
+  height: 48px;
+  color: var(--pin-sage);
+  pointer-events: none;
+  transform: rotate(-12deg);
+  filter: drop-shadow(2px 3px 1px #233e3433); /* taste-skill-ignore: User-requested raised pushpin. */
+}
+[data-pin-tone="ochre"] > .note-pin { color: var(--pin-ochre); }
+[data-pin-tone="clay"] > .note-pin { color: var(--pin-clay); }
+[data-motion-state="entering"] > .note-pin,
+[data-motion-state="exiting"] > .note-pin,
+[data-motion-state="outside"] > .note-pin {
+  opacity: 0;
+  transform: translateY(-14px) rotate(-12deg) scale(0.85);
+}
+[data-motion-state="visible"] > .note-pin {
+  transition: opacity var(--standard) var(--ease), transform var(--standard) var(--ease);
+}
+.hero { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; padding: 16px 24px 0; }
 .hero-paper {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 64px 44px;
+  padding: 76px 44px 64px;
   text-align: center;
   background: var(--paper);
-  border-radius: 3px 3px 26px 3px;
 }
 h1 { font-size: clamp(3.4rem, 6.5vw, 5.5rem); }
 .hero-description { max-width: 34ch; margin-top: 32px; }
@@ -182,10 +228,9 @@ h1 { font-size: clamp(3.4rem, 6.5vw, 5.5rem); }
   align-items: center;
   justify-content: center;
   gap: 32px;
-  padding: 48px 24px;
-  overflow: hidden;
-  background: var(--green);
-  border-radius: 26px 3px 3px 3px;
+  padding: 76px 24px 48px;
+  background: var(--note-sage);
+  --note-fold: #b8c7ae;
 }
 .hero-picture .portrait {
   width: 200px;
@@ -195,38 +240,37 @@ h1 { font-size: clamp(3.4rem, 6.5vw, 5.5rem); }
   transform: rotate(-4deg);
 }
 .hero-picture figcaption {
-  color: var(--light);
-  background: var(--green);
+  color: var(--ink);
   font-size: 1rem;
   line-height: 1.5;
   text-align: center;
 }
 .hero-picture figcaption span { display: block; font-size: 2rem; line-height: 1.2; margin-bottom: 20px; }
-.section-space { padding: 120px 7%; }
-.about { display: grid; grid-template-columns: 1fr 1.25fr; gap: 9%; background: var(--paper); margin-top: 16px; }
+.section-space { padding: 88px 7% 72px; margin: 36px 24px 0; }
+.about { display: grid; grid-template-columns: 1fr 1.25fr; gap: 9%; }
 .section-intro p { margin-top: 26px; max-width: 29ch; }
 .letter { max-width: 55ch; }
 .lead { font-size: 1.25rem; line-height: 1.55; }
 .signature { margin-top: 32px; font-size: 2.4rem; font-style: italic; }
-.lessons { display: grid; grid-template-columns: 1fr 1fr; gap: 12%; color: var(--light); background: var(--green); align-items: center; }
+.lessons { display: grid; grid-template-columns: 1fr 1fr; gap: 10%; background: var(--note-sage); --note-fold: #b8c7ae; align-items: center; }
 .lesson-intro > p { margin-top: 30px; max-width: 38ch; }
 .lesson-slip {
   padding: 48px 40px 58px;
   color: var(--ink);
   background: var(--paper);
-  clip-path: polygon(0 0, 100% 0, 100% 98%, 95% 100%, 90% 98%, 85% 100%, 80% 98%, 75% 100%, 70% 98%, 65% 100%, 60% 98%, 55% 100%, 50% 98%, 45% 100%, 40% 98%, 35% 100%, 30% 98%, 25% 100%, 20% 98%, 15% 100%, 10% 98%, 5% 100%, 0 98%);
+  border-radius: 2px;
 }
 .lesson-slip ol { margin: 34px 0 0; padding-left: 24px; }
 .lesson-slip li { margin-top: 28px; padding-left: 10px; }
 .lesson-slip li::marker { color: var(--muted); }
 .lesson-slip li p { margin-top: 10px; font-size: 0.95rem; }
 .slip-note { margin-top: 30px; font-style: italic; font-size: 0.9rem; }
-.questions { display: grid; grid-template-columns: 1fr 1.25fr; gap: 9%; background: var(--paper); }
+.questions { display: grid; grid-template-columns: 1fr 1.25fr; gap: 9%; background: var(--note-sage); --note-fold: #b8c7ae; }
 details + details { margin-top: 16px; }
-details { padding: 16px 20px; background: var(--page); }
+details { padding: 16px 20px; background: var(--paper); }
 summary { cursor: pointer; font-weight: 700; min-height: 44px; align-content: center; }
 details p { margin-top: 18px; }
-.contact { display: grid; grid-template-columns: 1.1fr 1fr; gap: 10%; color: var(--light); background: var(--green); align-items: center; }
+.contact { display: grid; grid-template-columns: 1.1fr 1fr; gap: 10%; color: var(--light); background: var(--green); --note-fold: #173b30; align-items: center; }
 .contact h2 { font-size: clamp(2.4rem, 5.6vw, 4.4rem); }
 .contact-copy > p { max-width: 34ch; }
 .button-light { margin-top: 30px; background: var(--accent); color: var(--ink); }
@@ -238,13 +282,12 @@ details p { margin-top: 18px; }
   .hero { min-height: 700px; }
 }
 @media (max-width: 900px) {
-  .section-space { padding: 84px 6%; }
-  .hero-paper { padding: 48px 24px; }
+  .section-space { padding: 80px 6% 60px; }
+  .hero-paper { padding: 76px 24px 48px; }
   h1 { font-size: clamp(2.4rem, 6.5vw, 3.4rem); }
   .hero-description { margin-top: 24px; }
   .hero-note { margin-top: 28px; }
-  .about, .questions { gap: 6%; grid-template-columns: 1fr 1.3fr; }
-  .lessons { gap: 6%; }
+  .about, .lessons, .questions, .contact { grid-template-columns: 1fr; gap: 38px; }
   .lesson-slip { padding: 36px 24px 48px; }
 }
 @media (max-width: 650px) {
@@ -255,19 +298,17 @@ details p { margin-top: 18px; }
   .site-header { padding: 24px 12px; align-items: start; flex-direction: column; gap: 12px; }
   .name { font-size: 1.45rem; }
   nav { gap: 0 18px; font-size: 0.88rem; }
-  .hero { grid-template-columns: 1fr; padding: 0 6px; gap: 12px; }
-  .hero-paper { padding: 40px 16px 32px; border-radius: 3px 3px 22px 3px; }
+  .hero { grid-template-columns: 1fr; padding: 12px 8px 0; gap: 28px; }
+  .hero-paper { padding: 72px 16px 36px; }
   h1 { font-size: clamp(2.1rem, 10vw, 3.4rem); }
   h2 { font-size: 1.85rem; }
   .hero-description { max-width: 32ch; }
   .hero .button { margin-top: 26px; }
-  .hero-picture { min-height: 360px; border-radius: 22px 3px 3px 3px; }
-  .section-space { padding: 60px 18px; }
-  .about, .lessons, .questions, .contact { grid-template-columns: 1fr; gap: 38px; }
-  .about { margin-top: 12px; }
+  .hero-picture { min-height: 400px; padding: 76px 20px 40px; }
+  .section-space { padding: 76px 20px 44px; margin: 28px 8px 0; }
   .section-intro p { margin-top: 20px; max-width: 34ch; }
   .lead { font-size: 1.2rem; }
-  .lesson-slip { margin-inline: -8px; padding: 36px 28px 50px; }
+  .lesson-slip { padding: 28px 20px 36px; }
   .contact h2 { font-size: 2.1rem; }
   .button { padding: 14px 12px; gap: 10px; }
   .site-footer { padding: 28px 18px; flex-direction: column; align-items: start; gap: 8px; }

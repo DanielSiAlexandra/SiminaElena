@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { createCardMotion } from "../site/motion.js";
 
-function fixture({ narrow = false, focused = false } = {}) {
+function fixture({ narrow = false, focused = false, random = () => 0.5 } = {}) {
   const animations = [];
   const element = {
     style: {}, dataset: {},
@@ -24,6 +24,7 @@ function fixture({ narrow = false, focused = false } = {}) {
     computed: () => appearance,
     activeElement: () => focused ? {} : null,
     narrow: () => narrow,
+    random,
   });
   return {
     controller, element, animations, callbacks,
@@ -32,6 +33,23 @@ function fixture({ narrow = false, focused = false } = {}) {
     get disconnected() { return disconnected; },
   };
 }
+
+test("pushpins select only curated colours once, remaining stable across motion restarts", () => {
+  for (const [value, expected] of [[0, "sage"], [0.34, "ochre"], [0.99, "clay"]]) {
+    let calls = 0;
+    const f = fixture({ random: () => { calls++; return value; } });
+    assert.equal(f.element.dataset.pinTone, expected);
+    f.controller.setEnabled(true);
+    f.move(800);
+    assert.equal(f.element.dataset.motionState, "entering");
+    f.animations.at(-1).onfinish();
+    assert.equal(f.element.dataset.motionState, "visible", "Pin reveal follows completed landing");
+    f.controller.setEnabled(false);
+    f.controller.setEnabled(true);
+    assert.equal(f.element.dataset.pinTone, expected);
+    assert.equal(calls, 1, "Scrolling/preferences must not recolour pins");
+  }
+});
 
 test("edge trigger has hysteresis and ignores the card's animated appearance", () => {
   const f = fixture();

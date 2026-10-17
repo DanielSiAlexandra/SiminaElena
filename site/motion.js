@@ -32,8 +32,13 @@ export function createCardMotion(elements, {
   computed = element => getComputedStyle(element),
   activeElement = () => document.activeElement,
   narrow = () => window.innerWidth < 650,
+  random = Math.random,
 } = {}) {
-  const records = new Map(elements.map(element => [element, { animation: null }]));
+  const pinTones = ["sage", "ochre", "clay"];
+  const records = new Map(elements.map(element => {
+    element.dataset.pinTone = pinTones[Math.floor(random() * pinTones.length)];
+    return [element, { animation: null }];
+  }));
   let stopWatching;
   let enabled = false;
   let generation = 0;

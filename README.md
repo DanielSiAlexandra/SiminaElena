@@ -66,6 +66,23 @@ results, credentials or contact details.
 
 ## Motion contract
 
+The six panels are pinned sticky notes: nearly square paper corners, a small fold,
+soft lifted-paper shadows and generous gutters. The palette follows the established
+cream–sage–forest/ochre scheme, using **60/30/10 as an approximate visual hierarchy**:
+neutral notebook/paper dominates, sage surfaces support it, forest and ochre focus
+attention on contact/actions. Coverage naturally varies with viewport and content;
+do not randomize note backgrounds or add a rainbow of competing accents.
+
+Each note gets one decorative inline-SVG pushpin. `createCardMotion` selects from
+sage (`#78967b`), ochre (`#b18733`) and muted clay (`#a26855`) once on initialization,
+not on every entrance. The pin appears only after landing, with a 220ms placement,
+and is removed during travel. Pin colours are stable across scrolling, reduced-motion
+changes and hidden-tab suspension. Pins are static and visible without JavaScript
+or with reduced motion, excluded from accessibility/navigation, and never block taps.
+Notes stay straight to preserve readable text and stable scroll geometry.
+Section contents stack below 900px so tablet notes do not squeeze body copy into
+narrow columns; the hero stacks below 650px.
+
 `site/motion.js` coordinates replayable card entry/exit. Cards slide in from below
 and fade out upward, regardless of scrolling direction. They retain layout space,
 reverse from their current appearance during interruptions, and become fully
