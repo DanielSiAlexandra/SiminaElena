@@ -52,7 +52,7 @@ node tools/agent-toolkit/toolkit.mjs run npm run build
 - `site/assets/pen.svg` and `handwriting.svg`: original local pen and handwritten paths.
 - `site/assets/portrait-placeholder.svg`: original notebook artwork, retained as the favicon.
 - `site/assets/patrick-hand-*.woff2`: locally hosted Patrick Hand, including Romanian
-  diacritics. The SIL Open Font License and Lucide message-icon ISC notice are in
+  diacritics. The SIL Open Font License, Lucide message-icon ISC and BookBlock MIT notices are in
   `site/assets/third-party-licenses.txt`, linked from and included in the build.
 
 No Facebook image URL is requested by visitors. Do not hotlink expiring CDN URLs.
@@ -84,18 +84,20 @@ excluded from accessibility/navigation, and never block taps.
 Section contents stack below 900px so tablet notes do not squeeze body copy into
 narrow columns; the hero stacks below 650px.
 
-`site/motion.js` coordinates replayable card entry/exit as a **book page turn over
-the left spiral, always right to left**. On entry a blank cover sheet
-(`.page-cover`, same note colour, decorative and hidden without JS) lies on the note
-and turns away: `rotateY(0 → -180deg)` around its left edge with
-`backface-visibility: hidden` and `cubic-bezier(0.25, 1, 0.5, 1)`, revealing the
-note underneath. On exit the note itself turns over the spiral the same way.
-Perspective scales with the note width (at least 1200px, three times the width)
-so wide desktop notes don't balloon toward the viewer. Vanilla Web Animations; no
-page-flip library (turn.js needs jQuery and StPageFlip is a flipbook viewer, not a
-scroll-triggered card effect). Cards retain layout space, reverse from their current
-appearance during interruptions, and become fully visible when focused or when
-reduced motion is enabled. Content and questions work without JS.
+`site/motion.js` decides when each note turns in or out; the page turn itself is
+**[BookBlock](https://github.com/codrops/BookBlock)** (Codrops, MIT), vendored
+unmodified as its vanilla build in `site/vendor/bookblock/` (commit `3fcee0a`; the
+npm package is an unpinned jQuery fork). `site/modernizr-shim.js` answers the few
+Modernizr tests it reads. `site/book-flip.js` gives every note **one persistent
+BookBlock instance** (it adds a window listener per instance, so never recreate
+it) holding a blank sheet and a snapshot of the note (ids stripped, padding pinned,
+inert and `aria-hidden`). Entry turns blank → note, exit turns note → blank, both
+forward `next()` with `circular`, so pages always turn **right to left** around
+the centre spine, 1600ms ease-in-out with BookBlock's shading. Notes outside the
+reading area show the blank sheet. Reversals and focus/anchor reveals settle the
+book by hand (hidden books never fire `transitionend`). Without JS or with
+reduced motion no book is created and notes are plain. The MIT notice is in
+`site/assets/third-party-licenses.txt`.
 
 Card triggers use **untransformed offset geometry** (`offsetTop`/`offsetHeight`, unaffected by 3D turns or tilts), not an IntersectionObserver on
 the moving panel. Scroll/resize measurements are batched into one requested frame;
@@ -103,8 +105,7 @@ ResizeObserver also handles font/content reflow. No frame loop runs when idle.
 Separate viewport bands prevent edge chatter: enter when the top is above 82%
 and the bottom below 28% of viewport height; exit only when the top passes 98%
 or the bottom passes above 18%.
-The turn lasts **1200ms on entry / 900ms on exit** (exit eases in and out). The
-earlier exit starts while a visible portion remains, so the turn can be seen
+The earlier exit starts while a visible portion remains, so the turn can be seen
 before the card leaves the screen.
 
 `site/pen.js` owns the pen state machine. Mouse movement follows height and tilts

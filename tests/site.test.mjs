@@ -54,12 +54,18 @@ test("notebook decorations, coherent cards, portrait and contact shortcut are ac
   assert.match(css, /font-family:\s*"Patrick Hand"/);
   for (const tone of ["yellow", "pink", "blue"]) assert.match(css, new RegExp(`--note-${tone}:\\s*#`));
   assert.doesNotMatch(css, /--note-green/);
-  assert.match(css, /\[data-card\]\s*\{[^}]*transform-origin:\s*0 50%/);
-  assert.doesNotMatch(css, /page-curl/);
-  assert.match(css, /\.page-cover\s*\{[^}]*transform-origin:\s*left center/);
-  assert.match(css, /\.page-cover\s*\{[^}]*backface-visibility:\s*hidden/);
-  assert.match(css, /\.page-cover\s*\{[^}]*display:\s*none/, "Cover is hidden without JS");
-  assert.equal((html.match(/class="page-cover" aria-hidden="true"/g) ?? []).length, 6);
+  assert.doesNotMatch(html, /page-cover/);
+  assert.match(css, /\.note-book\.bb-bookblock\s*\{[^}]*pointer-events:\s*none/);
+  assert.match(css, /\[data-motion-state="visible"\] > \.note-book\s*\{\s*display:\s*none/);
+  const lib = await read("site/vendor/bookblock/bookblock.js");
+  assert.match(lib, /bookblock\.js v2\.0\.1[^]*Licensed under the MIT license/, "Vendored Codrops BookBlock keeps its header");
+  await read("site/vendor/bookblock/bookblock.css");
+  const flip = await read("site/book-flip.js");
+  assert.match(flip, /instance\.defaults = \{ \.\.\.BookBlock\.prototype\.defaults \}[^]*BookBlock\.call\(instance/, "Each note owns its BookBlock options");
+  assert.match(flip, /TURN_SPEED = 1600/);
+  assert.match(flip, /circular:\s*true/);
+  assert.doesNotMatch(flip, /\.prev\(|direction:\s*"rtl"/, "Pages only ever turn forward, right to left");
+  assert.match(flip, /inert/, "Cloned page halves stay out of focus and the accessibility tree");
   assert.match(css, /@keyframes pin-press/);
   assert.match(css, /\[data-motion-state="entering"\][^]*?\.note-pin/);
   assert.match(css, /\.note-pin\s*\{[^}]*pointer-events:\s*none/);
@@ -72,6 +78,7 @@ test("notebook decorations, coherent cards, portrait and contact shortcut are ac
   const licenses = await read("site/assets/third-party-licenses.txt");
   assert.match(licenses, /SIL OPEN FONT LICENSE Version 1\.1/);
   assert.match(licenses, /Lucide message-circle icon/);
+  assert.match(licenses, /BookBlock[^]*Copyright 2013, Codrops[^]*Permission is hereby granted/);
   assert.match(css, /\[hidden\]\s*\{\s*display:\s*none/);
   assert.doesNotMatch(css, /transition:\s*all/);
 });
@@ -89,7 +96,8 @@ test("local source assets resolve and public source is explicitly bounded", asyn
     "assets/elena-simina.jpg", "assets/handwriting.svg", "assets/pen.svg",
     "assets/portrait-placeholder.svg", "assets/patrick-hand-latin-ext.woff2",
     "assets/patrick-hand-latin.woff2", "assets/third-party-licenses.txt",
-    "index.html", "main.js", "motion.js", "pen.js", "styles.css",
+    "book-flip.js", "index.html", "main.js", "modernizr-shim.js", "motion.js", "pen.js", "styles.css",
+    "vendor/bookblock/bookblock.css", "vendor/bookblock/bookblock.js",
   ];
   async function walk(directory) {
     const files = [];

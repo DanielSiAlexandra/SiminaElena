@@ -20,21 +20,6 @@ function watchCards(change, elements) {
   };
 }
 
-// Book-style turn around the left spiral; pages always travel right-to-left (negative rotateY).
-// Depth scales with the note width so wide desktop notes don't balloon toward the viewer mid-turn.
-const BOOK_EASING = "cubic-bezier(0.25, 1, 0.5, 1)";
-function turnFrames(element) {
-  const depth = Math.max(1200, Math.round((element.offsetWidth || 0) * 3));
-  const at = angle => `perspective(${depth}px) rotateY(${angle}deg)`;
-  return {
-    turned: { transform: at(-180), opacity: 0 },
-    flat: { transform: at(0), opacity: 1 },
-    entry: [{ transform: at(0), opacity: 0 }, { opacity: 1, offset: 0.12 }, { transform: at(0), opacity: 1 }],
-    // A blank cover page lies on the note and turns away over the spiral, revealing it.
-    cover: [{ transform: at(0) }, { transform: at(-180) }],
-  };
-}
-
 export function createCardMotion(elements, {
   watch = typeof window === "undefined" ? null : watchCards,
   bounds = element => {
@@ -45,14 +30,15 @@ export function createCardMotion(elements, {
     return { top, bottom: top + element.offsetHeight };
   },
   viewport = () => window.innerHeight,
-  computed = element => getComputedStyle(element),
   activeElement = () => document.activeElement,
   random = Math.random,
+  // Builds the page-turn engine for one note; see book-flip.js (BookBlock).
+  flipper = null,
 } = {}) {
   const pinTones = ["sage", "ochre", "clay"];
   const records = new Map(elements.map(element => {
     element.dataset.pinTone = pinTones[Math.floor(random() * pinTones.length)];
-    return [element, { animation: null, cover: null }];
+    return [element, { flip: null, token: 0 }];
   }));
   let stopWatching;
   let enabled = false;
@@ -61,13 +47,9 @@ export function createCardMotion(elements, {
   function reveal(element) {
     const record = records.get(element);
     if (!record) return;
-    record.animation?.cancel();
-    record.animation = null;
-    record.cover?.cancel();
-    record.cover = null;
-    element.style.transform = "";
-    element.style.opacity = "";
+    record.token++;
     element.dataset.motionState = "visible";
+    record.flip?.settle(true);
   }
 
   function transition(element, entering) {
@@ -77,36 +59,16 @@ export function createCardMotion(elements, {
     const state = element.dataset.motionState;
     if ((entering && (state === "entering" || state === "visible")) ||
         (!entering && (state === "exiting" || state === "outside"))) return;
-    if (typeof element.animate !== "function") { reveal(element); return; }
-    const style = computed(element);
-    const fresh = entering && (!state || state === "outside");
-    const current = { transform: style.transform, opacity: style.opacity };
-    record.animation?.cancel();
-    const frames = turnFrames(element);
-    const final = entering ? frames.flat : frames.turned;
-    element.style.transform = final.transform;
-    element.style.opacity = String(final.opacity);
+    const token = ++record.token;
     element.dataset.motionState = entering ? "entering" : "exiting";
-    const animation = element.animate(fresh ? frames.entry : [current, final], {
-      duration: entering ? 1200 : 900,
-      easing: entering ? BOOK_EASING : "cubic-bezier(0.45, 0, 0.55, 1)",
-    });
-    if (fresh) {
-      const cover = element.querySelector?.(":scope > .page-cover");
-      record.cover?.cancel();
-      record.cover = cover?.animate(frames.cover, { duration: 1200, easing: BOOK_EASING, fill: "forwards" }) ?? null;
-    }
-    record.animation = animation;
-    animation.onfinish = () => {
-      if (record.animation !== animation) return;
-      record.animation = null;
+    record.flip.turn(entering, () => {
+      if (record.token !== token) return;
       element.dataset.motionState = entering ? "visible" : "outside";
-      if (entering) { element.style.transform = ""; element.style.opacity = ""; }
-    };
+    });
   }
 
   function setEnabled(value) {
-    enabled = value && Boolean(watch);
+    enabled = value && Boolean(watch) && Boolean(flipper);
     const current = ++generation;
     stopWatching?.();
     stopWatching = null;
@@ -115,12 +77,13 @@ export function createCardMotion(elements, {
       delete element.dataset.motionState;
     }
     if (!enabled) return;
+    for (const [element, record] of records) record.flip ??= flipper(element);
     const update = () => {
       if (!enabled || current !== generation) return;
       const height = viewport();
       const positions = elements.map(element => ({ element, ...bounds(element) }));
       for (const { element, top, bottom } of positions) {
-        if (element.contains(activeElement()) || typeof element.animate !== "function") {
+        if (element.contains(activeElement())) {
           reveal(element);
           continue;
         }
@@ -131,9 +94,8 @@ export function createCardMotion(elements, {
           ? bottom > height * 0.18 && top < height * 0.98
           : bottom > height * 0.28 && top < height * 0.82;
         if (!state && !inside) {
-          element.style.transform = turnFrames(element).turned.transform;
-          element.style.opacity = "0";
           element.dataset.motionState = "outside";
+          records.get(element).flip.settle(false);
         } else {
           transition(element, inside);
         }

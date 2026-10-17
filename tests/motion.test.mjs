@@ -2,48 +2,35 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { createCardMotion } from "../site/motion.js";
 
-// Book-style turn around the left spiral: pages always travel right-to-left (negative rotateY).
-const turned = { transform: "perspective(1200px) rotateY(-180deg)", opacity: 0 };
-const flat = { transform: "perspective(1200px) rotateY(0deg)", opacity: 1 };
-const covered = { transform: "perspective(1200px) rotateY(0deg)", opacity: 0 };
-
-function fixture({ narrow = false, focused = false, random = () => 0.5, cover = false } = {}) {
-  const animations = [];
-  const coverAnimations = [];
-  const coverElement = {
-    animate(frames, options) {
-      const animation = { frames, options, cancel() { this.cancelled = true; } };
-      coverAnimations.push(animation);
-      return animation;
-    },
-  };
-  const element = {
-    style: {}, dataset: {},
-    ...(cover ? { querySelector: selector => selector === ":scope > .page-cover" ? coverElement : null } : {}),
-    contains: () => focused,
-    animate(frames, options) {
-      const animation = { frames, options, cancel() { this.cancelled = true; } };
-      animations.push(animation);
-      return animation;
-    },
-  };
+// The page-flip itself belongs to BookBlock (see site/book-flip.js); this controller only
+// decides when a note turns in (blank sheet → note) or out (note → blank sheet).
+function fixture({ focused = false, random = () => 0.5, flip = true } = {}) {
+  const element = { style: {}, dataset: {}, contains: () => focused };
+  const turns = [];
+  let created = 0;
+  let settled = 0;
   let box = { top: 900, bottom: 1200 };
-  let appearance = { transform: "none", opacity: "1" };
   const callbacks = [];
   let disconnected = 0;
   const controller = createCardMotion([element], {
     watch: callback => { callbacks.push(callback); return () => { disconnected++; }; },
     bounds: () => box,
     viewport: () => 1000,
-    computed: () => appearance,
     activeElement: () => focused ? {} : null,
-    narrow: () => narrow,
     random,
+    flipper: flip ? () => {
+      created++;
+      return {
+        turn(entering, done) { turns.push({ entering, done }); },
+        settle() { settled++; },
+      };
+    } : null,
   });
   return {
-    controller, element, animations, coverAnimations, callbacks,
+    controller, element, turns, callbacks,
     move(top, bottom = top + 300) { box = { top, bottom }; callbacks.at(-1)(); },
-    appearance(value) { appearance = value; },
+    get created() { return created; },
+    get settled() { return settled; },
     get disconnected() { return disconnected; },
   };
 }
@@ -56,8 +43,8 @@ test("pushpins select only curated colours once, remaining stable across motion 
     f.controller.setEnabled(true);
     f.move(800);
     assert.equal(f.element.dataset.motionState, "entering");
-    f.animations.at(-1).onfinish();
-    assert.equal(f.element.dataset.motionState, "visible", "Pin reveal follows completed landing");
+    f.turns.at(-1).done();
+    assert.equal(f.element.dataset.motionState, "visible", "Pin reveal follows the completed page turn");
     f.controller.setEnabled(false);
     f.controller.setEnabled(true);
     assert.equal(f.element.dataset.pinTone, expected);
@@ -65,110 +52,108 @@ test("pushpins select only curated colours once, remaining stable across motion 
   }
 });
 
-test("edge trigger has hysteresis and ignores the card's animated appearance", () => {
+test("one BookBlock per note, reused across every turn and restart", () => {
+  const f = fixture();
+  f.controller.setEnabled(true);
+  for (let i = 0; i < 3; i++) {
+    f.move(800); f.turns.at(-1).done();
+    f.move(990); f.turns.at(-1).done();
+  }
+  f.controller.setEnabled(false);
+  f.controller.setEnabled(true);
+  f.move(800);
+  assert.equal(f.created, 1, "BookBlock leaks a window listener per instance, so never recreate it");
+});
+
+test("edge trigger has hysteresis; entry turns the note in and exit turns it out", () => {
   const f = fixture();
   f.controller.setEnabled(true);
   assert.equal(f.element.dataset.motionState, "outside");
-  assert.equal(f.animations.length, 0, "Offscreen initialization must not flash");
+  assert.equal(f.turns.length, 0, "Offscreen initialization must not flip");
   f.move(810);
   assert.equal(f.element.dataset.motionState, "entering");
-  const entry = f.animations[0];
-  assert.deepEqual(entry.frames[0], covered, "Covered note fades in flat while its cover page turns");
-  assert.deepEqual(entry.frames.at(-1), flat);
-  assert.equal(entry.options.duration, 1200);
-  f.appearance({ transform: "matrix(1, 0, 0, 1, 0, 115)", opacity: "0.05" });
+  assert.equal(f.turns[0].entering, true);
   for (const top of [815, 825, 840, 830, 819]) f.move(top);
-  assert.equal(f.animations.length, 1, "Boundary jitter must not restart animation");
-  entry.onfinish();
+  assert.equal(f.turns.length, 1, "Boundary jitter must not restart the turn");
+  f.turns[0].done();
   f.move(950);
   assert.equal(f.element.dataset.motionState, "visible");
   f.move(981);
   assert.equal(f.element.dataset.motionState, "exiting");
-  assert.deepEqual(f.animations.at(-1).frames.at(-1), turned, "Exit turns the note over the spiral, right to left");
-  assert.equal(f.animations.at(-1).options.duration, 900);
-  f.animations.at(-1).onfinish();
+  assert.equal(f.turns.at(-1).entering, false);
+  f.turns.at(-1).done();
+  assert.equal(f.element.dataset.motionState, "outside");
   f.move(300);
-  f.animations.at(-1).onfinish();
+  f.turns.at(-1).done();
   f.move(-100, 190);
   assert.equal(f.element.dataset.motionState, "visible");
   f.move(-100, 170);
-  const count = f.animations.length;
+  const count = f.turns.length;
   for (const bottom of [180, 220, 270]) f.move(-100, bottom);
-  assert.equal(f.animations.length, count, "Top edge jitter must not reverse an exit");
+  assert.equal(f.turns.length, count, "Top edge jitter must not reverse an exit");
   f.move(-100, 290);
   assert.equal(f.element.dataset.motionState, "entering");
 });
 
-test("entry turns a cover page right-to-left over the spiral like a book", () => {
-  const f = fixture({ cover: true });
-  f.controller.setEnabled(true);
-  f.move(800);
-  const page = f.coverAnimations.at(-1);
-  assert.ok(page, "Cover page animates on a fresh entry");
-  assert.equal(page.frames[0].transform, "perspective(1200px) rotateY(0deg)");
-  assert.equal(page.frames.at(-1).transform, "perspective(1200px) rotateY(-180deg)");
-  assert.ok(page.frames.every(frame => !/rotateY\([1-9]/.test(frame.transform)), "Never turns left-to-right");
-  assert.equal(page.options.duration, 1200);
-  assert.equal(page.options.easing, "cubic-bezier(0.25, 1, 0.5, 1)");
-  f.animations.at(-1).onfinish();
-  f.move(990);
-  assert.equal(f.coverAnimations.length, 1, "Exit turns the note itself, not the cover back");
-  f.controller.setEnabled(false);
-  assert.ok(page.cancelled, "Disabling motion removes the cover page animation");
-});
-
-test("reversal captures current appearance and rejects stale completion", () => {
+test("reversal starts the opposite turn and rejects stale completion", () => {
   const f = fixture();
   f.controller.setEnabled(true);
   f.move(800);
-  const entry = f.animations[0];
-  const midway = { transform: "matrix(1, 0, 0, 1, 0, 63)", opacity: "0.5" };
-  f.appearance(midway);
+  const entry = f.turns[0];
   f.move(990);
-  assert.ok(entry.cancelled);
-  assert.deepEqual(f.animations[1].frames[0], midway);
-  entry.onfinish();
   assert.equal(f.element.dataset.motionState, "exiting");
+  assert.equal(f.turns[1].entering, false);
+  entry.done();
+  assert.equal(f.element.dataset.motionState, "exiting", "Stale entry completion is ignored");
   f.move(800);
-  const latest = f.animations.at(-1);
-  assert.deepEqual(latest.frames[0], midway);
-  latest.onfinish();
+  const latest = f.turns.at(-1);
+  assert.equal(latest.entering, true);
+  f.turns[1].done();
+  assert.equal(f.element.dataset.motionState, "entering");
+  latest.done();
   assert.equal(f.element.dataset.motionState, "visible");
-  assert.equal(f.element.style.transform, "");
 });
 
-test("completed exits flip back in at either edge and oversized cards remain visible", () => {
-  const f = fixture({ narrow: true });
+test("oversized cards and completed exits turn back in at either edge", () => {
+  const f = fixture();
   f.controller.setEnabled(true);
   for (const [top, bottom] of [[-250, 50], [990, 1290]]) {
     f.move(300);
-    f.animations.at(-1).onfinish();
+    f.turns.at(-1).done();
     f.move(top, bottom);
-    f.animations.at(-1).onfinish();
+    f.turns.at(-1).done();
     assert.equal(f.element.dataset.motionState, "outside");
     f.move(top < 0 ? -100 : 800, top < 0 ? 320 : 1100);
-    assert.deepEqual(f.animations.at(-1).frames[0], covered);
-    f.animations.at(-1).onfinish();
+    assert.equal(f.turns.at(-1).entering, true);
+    f.turns.at(-1).done();
   }
   f.move(-100, 3000);
   assert.equal(f.element.dataset.motionState, "visible");
 });
 
-test("focus, unsupported APIs and disabled motion leave content visible", () => {
+test("focus, missing BookBlock and disabled motion leave content visible", () => {
   const f = fixture({ focused: true });
   f.controller.setEnabled(true);
   f.move(-500);
   assert.equal(f.element.dataset.motionState, "visible");
-  assert.equal(f.animations.length, 0);
-  f.controller.setEnabled(false);
-  assert.equal(f.element.style.opacity, "");
+  assert.equal(f.turns.length, 0);
+  const g = fixture();
+  g.controller.setEnabled(true);
+  g.move(800);
+  const before = g.settled;
+  g.controller.reveal(g.element);
+  assert.equal(g.element.dataset.motionState, "visible");
+  assert.ok(g.settled > before, "Reveal settles any running page turn");
+  g.turns[0].done();
+  assert.equal(g.element.dataset.motionState, "visible");
+  g.controller.setEnabled(false);
+  assert.equal(g.element.dataset.motionState, undefined);
+  const none = fixture({ flip: false });
+  none.controller.setEnabled(true);
+  assert.equal(none.element.dataset.motionState, undefined, "Without BookBlock nothing hides");
   const fallback = createCardMotion([f.element], { watch: null });
   fallback.setEnabled(true);
-  assert.equal(f.element.style.transform, "");
-  const unsupported = fixture();
-  unsupported.element.animate = undefined;
-  unsupported.controller.setEnabled(true);
-  assert.equal(unsupported.element.style.opacity, "");
+  assert.equal(f.element.dataset.motionState, undefined);
 });
 
 test("teardown rejects queued frames and does not accumulate watchers", () => {
@@ -178,12 +163,11 @@ test("teardown rejects queued frames and does not accumulate watchers", () => {
   const old = f.callbacks[0];
   f.controller.setEnabled(false);
   old();
-  assert.equal(f.element.style.opacity, "");
+  assert.equal(f.element.dataset.motionState, undefined);
   f.controller.setEnabled(true);
-  const count = f.animations.length;
+  const count = f.turns.length;
   old();
-  assert.equal(f.animations.length, count);
+  assert.equal(f.turns.length, count);
   f.controller.destroy();
   assert.equal(f.disconnected, 2);
-  assert.equal(f.element.style.transform, "");
 });

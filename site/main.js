@@ -1,9 +1,10 @@
 import { createCardMotion } from "./motion.js";
+import { createBookFlip } from "./book-flip.js";
 import { createPen, traceStrokes } from "./pen.js";
 import handwriting from "./assets/handwriting.svg?raw";
 
 const cards = [...document.querySelectorAll("[data-card]")];
-const cardMotion = createCardMotion(cards);
+const cardMotion = createCardMotion(cards, { flipper: createBookFlip });
 const rail = document.querySelector(".pen-rail");
 const penArt = document.querySelector(".floating-pen");
 const ink = document.querySelector(".handwriting");
