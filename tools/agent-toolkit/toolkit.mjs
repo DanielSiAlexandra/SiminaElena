@@ -264,20 +264,39 @@ export async function activate(profile, extras, root = repo, processSkills) {
   }
 }
 
-async function bootstrap() {
-  const directory = join(local, "bootstrap");
+export async function bootstrap(root = repo, executable = node) {
+  const instructions = join(root, ".agent-toolkit/vendor/superpowers/skills/using-superpowers/SKILL.md");
+  if (!await exists(instructions)) {
+    throw new Error("Superpowers sources are not installed. From the repository root run: node tools/agent-toolkit/toolkit.mjs setup");
+  }
+  const directory = join(root, ".agent-toolkit/bootstrap");
   await mkdir(join(directory, ".claude-plugin"), { recursive: true });
   await mkdir(join(directory, "hooks"), { recursive: true });
   await writeFile(join(directory, ".claude-plugin/plugin.json"), JSON.stringify({
     name: "repo-superpowers-bootstrap", version: "1.0.0", description: "Repo-local shared-skill Superpowers bootstrap adapter (no duplicate skill copies)."
   }, null, 2));
-  await cp(join(home, "bootstrap.mjs"), join(directory, "hooks/bootstrap.mjs"));
+  await cp(join(root, "tools/agent-toolkit/bootstrap.mjs"), join(directory, "hooks/bootstrap.mjs"));
+  const quote = path => `"${path.replace(/([\\$`"])/g, "\\$1")}"`;
   await writeFile(join(directory, "hooks/hooks.json"), JSON.stringify({
     hooks: { SessionStart: [{ matcher: "startup|clear|compact", hooks: [{
-      type: "command", command: '"${CLAUDE_PLUGIN_ROOT}/../../tools/agent-toolkit/node/node_modules/node/bin/node" "${CLAUDE_PLUGIN_ROOT}/hooks/bootstrap.mjs"',
+      type: "command", command: `${quote(executable)} ${quote(join(directory, "hooks/bootstrap.mjs"))}`,
       shell: "bash", async: false
     }] }] }
   }, null, 2));
+}
+
+export async function prepareHost(root = repo, executable = node) {
+  const setup = "node tools/agent-toolkit/toolkit.mjs setup";
+  if (!await exists(executable) ||
+      !await exists(join(root, ".agent-toolkit/vendor/superpowers/skills/using-superpowers/SKILL.md")) ||
+      !await exists(join(root, ".agents/.toolkit-managed.json")) ||
+      !await exists(join(root, ".agents/skills/using-superpowers/SKILL.md"))) {
+    throw new Error(`Local agent toolkit is not set up in ${root}. From that repository root run: ${setup}`);
+  }
+  // This plugin is generated and ignored, so a fresh checkout or interrupted setup may lack it.
+  // Regenerate it from tracked code, without reinstalling tools or changing the selected profile.
+  await bootstrap(root, executable);
+  return join(root, ".agent-toolkit/bootstrap");
 }
 
 export async function runTool(name, args) {
@@ -313,7 +332,8 @@ export async function runTool(name, args) {
   }
   if (["copilot", "claude"].includes(name)) {
     if (win) throw new Error("Plugin bootstrap launcher currently requires Bash; use shared skills and manual bootstrap on Windows (see README)");
-    return command(name, ["--plugin-dir", join(local, "bootstrap"), ...args], { env, timeout: 86400000 });
+    const plugin = await prepareHost();
+    return command(name, ["--plugin-dir", plugin, ...args], { env, timeout: 86400000 });
   }
   throw new Error(`Unknown tool ${name}`);
 }

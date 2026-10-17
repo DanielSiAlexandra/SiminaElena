@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { profiles, extensions, selection, sources } from "./catalog.mjs";
-import { activate, wrapper } from "./toolkit.mjs";
+import { activate, bootstrap, prepareHost, wrapper, command } from "./toolkit.mjs";
 
 const home = fileURLToPath(new URL(".", import.meta.url));
 const root = resolve(home, "../..");
@@ -101,4 +101,53 @@ test("runtime package versions and lockfiles match the requested pinned tools", 
   for (const path of [".agent-toolkit/", ".agents/skills/", ".agents/.toolkit-managed.json", "tools/agent-toolkit/runtime/node_modules/"]) {
     assert.ok(ignored.split("\n").includes(path), path);
   }
+});
+
+async function bootstrapFixture(dir) {
+  await mkdir(join(dir, ".agent-toolkit/vendor/superpowers/skills/using-superpowers"), { recursive: true });
+  await writeFile(join(dir, ".agent-toolkit/vendor/superpowers/skills/using-superpowers/SKILL.md"), "Fixture Superpowers instructions");
+  await mkdir(join(dir, "tools/agent-toolkit"), { recursive: true });
+  await writeFile(join(dir, "tools/agent-toolkit/bootstrap.mjs"), await readFile(join(home, "bootstrap.mjs")));
+}
+
+test("bootstrap refuses uninstalled sources with setup guidance instead of making a broken plugin", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "agent-bootstrap-"));
+  try {
+    await assert.rejects(bootstrap(dir), /setup/);
+    await assert.rejects(readFile(join(dir, ".agent-toolkit/bootstrap/.claude-plugin/plugin.json")), { code: "ENOENT" });
+  } finally { await rm(dir, { recursive: true, force: true }); }
+});
+
+test("host preflight rejects a fresh checkout before invoking the agent", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "agent-bootstrap-"));
+  try {
+    await assert.rejects(prepareHost(dir), /node tools\/agent-toolkit\/toolkit.mjs setup/);
+    await bootstrapFixture(dir);
+    await assert.rejects(prepareHost(dir), /setup/);
+  } finally { await rm(dir, { recursive: true, force: true }); }
+});
+
+test("host preflight repairs a missing bootstrap while preserving the selected profile", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "agent bootstrap spaces-"));
+  try {
+    await bootstrapFixture(dir);
+    await activate("public-site", [], dir, [{
+      name: "using-superpowers", source: "superpowers",
+      path: "skills/using-superpowers/SKILL.md", description: "Test bootstrap"
+    }]);
+    const managed = await readFile(join(dir, ".agents/.toolkit-managed.json"), "utf8");
+    const plugin = await prepareHost(dir, process.execPath);
+    assert.equal(plugin, join(dir, ".agent-toolkit/bootstrap"));
+    assert.equal(await readFile(join(dir, ".agents/.toolkit-managed.json"), "utf8"), managed);
+    const manifest = JSON.parse(await readFile(join(plugin, ".claude-plugin/plugin.json"), "utf8"));
+    assert.equal(manifest.name, "repo-superpowers-bootstrap");
+    const hooks = JSON.parse(await readFile(join(plugin, "hooks/hooks.json"), "utf8"));
+    const hook = hooks.hooks.SessionStart[0].hooks[0];
+    assert.ok(hook.command.includes(process.execPath.replace(/([\\$`"])/g, "\\$1")));
+    const output = JSON.parse(await command(process.execPath, [join(plugin, "hooks/bootstrap.mjs")], { capture: true }));
+    assert.match(output.additionalContext ?? output.hookSpecificOutput?.additionalContext, /Fixture Superpowers instructions/);
+    await rm(join(plugin, "hooks/hooks.json"));
+    await prepareHost(dir, process.execPath);
+    assert.equal(JSON.parse(await readFile(join(plugin, "hooks/hooks.json"), "utf8")).hooks.SessionStart.length, 1);
+  } finally { await rm(dir, { recursive: true, force: true }); }
 });

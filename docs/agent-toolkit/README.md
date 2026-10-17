@@ -78,6 +78,8 @@ Copilot, with a repo-local startup plugin and **no user-global install**:
 node tools/agent-toolkit/toolkit.mjs run copilot
 ```
 
+Run `setup` once in **each new checkout** before using this launcher. Git does not copy the ignored vendor sources, local runtimes, managed skills or bootstrap plugin. The launcher now checks those prerequisites and prints the setup command rather than sending Copilot a nonexistent plugin path. Once the prerequisites exist, it regenerates the ignored bootstrap on launch, including after that directory was removed or setup was interrupted, without changing your selected profile.
+
 The generated `.agent-toolkit/bootstrap` plugin has a Node hook that emits the **full pinned `using-superpowers` instructions** at startup/clear/compact. It contains no duplicate skill folders. Other Superpowers skills are loaded from the managed library. Namespaced `superpowers:<name>` references map to the corresponding unnamespaced shared skill `<name>`; this mapping is stated in the bootstrap and adapters.
 
 For a host with supported `--plugin-dir` and compatible hook output, the same local bootstrap can be passed explicitly. The `run claude` convenience launcher is supplied for compatible Claude versions, but **has not been validated against an installed Claude host**. Do not run both this adapter and another Superpowers plugin simultaneously.

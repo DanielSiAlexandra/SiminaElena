@@ -6,6 +6,8 @@ Read `docs/notion/README.md` before interacting with the project's Notion worksp
 
 # Agent toolkit
 
+In a new checkout, run the toolkit's `setup` before `run copilot`/`run claude`; ignored local dependencies are not inherited from the template. The launcher validates prerequisites and regenerates its local bootstrap without switching profiles.
+
 Read `docs/agent-toolkit/README.md` before using or switching the installed toolkit. Shared active skills are managed adapters in `.agents/skills/`; complete pinned upstream sources and local tool state live in ignored `.agent-toolkit/`. Never overwrite a modified/unmanaged skill or activate competing design directors. Use `node tools/agent-toolkit/toolkit.mjs profile list` and `profile use <name> [+pack ...]`, then reload/restart the host. Start with `using-superpowers` on hosts without the supported repo-local startup hook; namespaced `superpowers:<name>` references map to the shared skill `<name>`.
 
 Superpowers is the normal process owner, not authority to bypass user approval. Default to inline execution; use subagents only when appropriate and authorized. When bunshin is explicitly selected, do not also start a competing Superpowers implementation loop. Preserve user changes (including when applying TDD); meaningful scope/behavior changes still need clarification. Keep plans in the session workspace unless repository plans are requested. Existing Notion edit/Roadmap approvals remain mandatory. No automatic cloud uploads, provider routing, paid generation, app instrumentation, global hooks or floating installers. Use the local tool launcher rather than changing system runtimes. Graphify is code-only by default; OmniRoute is unconnected, Reticle uninstrumented and Superdesign service use opt-in.
