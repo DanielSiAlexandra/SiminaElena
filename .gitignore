@@ -1,6 +1,6 @@
 .env.private
 /personal-info.txt
-docs/notion/node_modules/
+node_modules/
 .notion-sync-state.json
 .notion-sync-state.json.*.tmp
 .notion-discovery/
@@ -16,3 +16,5 @@ tools/agent-toolkit/node/node_modules/
 .graphify/
 graphify-out/
 .superpowers/
+.taste-skill/
+.playwright-cli/

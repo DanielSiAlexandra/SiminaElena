@@ -97,7 +97,6 @@ AGENTS.md and explicit user decisions remain authoritative:
 - Preserve all existing user work. TDD's delete-first language is **not permission to delete pre-existing or unrelated edits**. Clarify the safe scope of a test-first rewrite.
 - Ask about meaningful behavior/scope changes, dependencies, purchases, cloud use, service credentials and publishing. Routine implementation details within an approved specification can be chosen and recorded.
 - Planning artifacts belong in the session workspace unless the user requests repository plans; do not create a competing plan hierarchy automatically.
-- Existing Notion root scoping, page-edit preview/approval and Roadmap permission rules are unchanged.
 - No tool is allowed to bypass a denied permission, emit fabricated execution evidence or turn an upstream installer example into authorization.
 
 These policy overrides and the profile filters address **known** contradictions; they do not certify all upstream instructions as conflict-free for every task.
@@ -155,7 +154,6 @@ Run `node tools/agent-toolkit/toolkit.mjs run npm audit --prefix tools/agent-too
 ```text
 npm test --prefix tools/agent-toolkit
 node tools/agent-toolkit/smoke.mjs
-npm test --prefix docs/notion
 ```
 
 The unit tests need no vendor downloads, tools or network. The separate smoke script needs setup: it builds a tiny local code graph, scans a harmless local skill statically, opens a localhost fixture, captures a screenshot and closes the browser/server. It never runs upstream target-skill scripts or sends model requests.
