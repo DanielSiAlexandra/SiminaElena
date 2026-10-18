@@ -177,7 +177,7 @@ main { max-width: 1560px; margin-inline: auto; padding-bottom: 40px; }
     linear-gradient(170deg, #ffffff40, transparent 50%), /* taste-skill-ignore: Sticky-note reference. */
     var(--note); /* taste-skill-ignore: Curl, adhesive band and paper sheen of the requested sticky-note reference. */
 }
-/* Soft shadow shaped like the note itself, so nothing shows through the cut-away corner. */
+/* Soft shadow shaped like the note itself, so nothing shows through the cut-away corner. */ /* taste-skill-ignore: Requested sticky-note shadow without the corner triangle. */
 [data-card]::after {
   content: "";
   position: absolute;
