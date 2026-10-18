@@ -90,17 +90,20 @@ unmodified as its vanilla build in `site/vendor/bookblock/` (commit `3fcee0a`; t
 npm package is an unpinned jQuery fork). `site/modernizr-shim.js` answers the few
 Modernizr tests it reads. `site/book-flip.js` gives every note **one persistent
 BookBlock instance** (it adds a window listener per instance, so never recreate
-it) holding a blank sheet and a snapshot of the note (ids stripped, padding pinned,
-inert and `aria-hidden`). Entry turns blank → note, exit turns note → blank, both
-forward `next()` with `circular`. Section notes on wider screens turn **right to
+it) holding three items: the note **folded before entry** (only the half that turns
+is paper), a snapshot of the note (ids stripped, padding pinned, inert and
+`aria-hidden`) and the note **folded after exit**. Entry turns item 1 → 2, exit 2 → 3,
+always forward `next()`. Section notes on wider screens turn **right to
 left** around a vertical centre spine; the two hero notes always, and the contact
 note at ≤650px, use BookBlock's horizontal mode and fold **bottom to top**
-(orientation is chosen per turn, so rotating a phone works). On entry the back of
-the turning page is blank, so the half it lands on only shows text once the turn
+(orientation is chosen per turn, so rotating a phone works). The half a note lands
+on (entry) or leaves (exit) is bare notebook: no paper colour, BookBlock shade or
+note shadow (the real note's `::before`/`::after` hide while the book turns). The
+turning page's back is blank on entry, so text only appears once the turn
 completes. At ≤650px the about, lessons and questions notes instead **slide**
 as whole notes: in from 80px below (1400ms) and out 80px upward (1100ms),
 `cubic-bezier(0.25, 0.1, 0.25, 1)`, reversing from their current position. Turns take 1600ms ease-in-out with BookBlock's shading. Notes outside the
-reading area show the blank sheet. Reversals and focus/anchor reveals settle the
+reading area rest as the folded note. Reversals and focus/anchor reveals settle the
 book by hand (hidden books never fire `transitionend`). Without JS or with
 reduced motion no book is created and notes are plain. The MIT notice is in
 `site/assets/third-party-licenses.txt`.

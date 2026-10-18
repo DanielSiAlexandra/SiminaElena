@@ -43,6 +43,7 @@
 }
 
 * { box-sizing: border-box; }
+html { -webkit-tap-highlight-color: transparent; }
 body {
   margin: 0;
   padding-left: var(--binding-width);
@@ -203,6 +204,15 @@ main { max-width: 1560px; margin-inline: auto; padding-bottom: 40px; }
 [data-card][data-motion-state]:not([data-motion-state="visible"]) > :not(.note-book) { opacity: 0; }
 /* The half a page lands on stays blank until the turn completes. */
 [data-motion-state="entering"] > .note-book > .bb-page:nth-child(2) .bb-back .note-sheet > * { visibility: hidden; }
+/* Folded note: only the half that turns is paper; the half it lands on (entry) or leaves (exit)
+   is bare notebook with no shade, and the real note's paper and shadow step aside meanwhile. taste-skill-ignore */
+.note-book.bb-vertical .note-blank-start { clip-path: polygon(50% 0, 100% 0, 100% calc(100% - 52px), calc(100% - 52px) 100%, 50% 100%); }
+.note-book.bb-vertical .note-blank-end { clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%); }
+.note-book.bb-horizontal .note-blank-start { clip-path: polygon(0 50%, 100% 50%, 100% calc(100% - 52px), calc(100% - 52px) 100%, 0 100%); }
+.note-book.bb-horizontal .note-blank-end { clip-path: polygon(0 0, 100% 0, 100% 50%, 0 50%); }
+.note-book .bb-page:has(.note-blank) .bb-overlay { display: none; }
+[data-card][data-turn="book"][data-motion-state]:not([data-motion-state="visible"])::before,
+[data-card][data-turn="book"][data-motion-state]:not([data-motion-state="visible"])::after { opacity: 0; }
 /* Phone sections slide as whole notes (see book-flip.js), so the book and content-hiding step aside. */
 [data-turn="slide"][data-motion-state] > .note-book { display: none; }
 [data-card][data-turn="slide"][data-motion-state] > :not(.note-book, .note-pin) { opacity: 1; }

@@ -23,9 +23,9 @@ function orientation(card) {
   return card.closest(".hero") || phone.matches ? "horizontal" : "vertical";
 }
 
-function sheet(card, withContent) {
+function sheet(card, withContent, blank = "") {
   const page = document.createElement("div");
-  page.className = `note-sheet ${card.className}`;
+  page.className = `note-sheet ${card.className}${blank ? ` note-blank ${blank}` : ""}`;
   if (!withContent) return page;
   // Percentage padding would resolve against a different box inside the book, so pin it.
   page.style.padding = getComputedStyle(card).padding;
@@ -46,15 +46,16 @@ function item(content) {
   return element;
 }
 
-// One persistent BookBlock per note: item 1 is a blank sheet, item 2 a snapshot of the note.
-// Every turn is a forward next(); circular wraps the exit back to the blank sheet.
+// One persistent BookBlock per note: the note folded in half before entry (only the half that
+// will turn is paper; the landing half is bare notebook), a snapshot of the note, and the note
+// folded after exit. Every turn is a forward next().
 export function createBookFlip(card, { speed = TURN_SPEED } = {}) {
   const book = document.createElement("div");
   book.className = "note-book bb-bookblock";
   book.setAttribute("aria-hidden", "true");
   book.inert = true;
   const note = item(sheet(card, false));
-  book.append(item(sheet(card, false)), note);
+  book.append(item(sheet(card, false, "note-blank-start")), note, item(sheet(card, false, "note-blank-end")));
   card.append(book);
 
   let finish = null;
@@ -75,12 +76,12 @@ export function createBookFlip(card, { speed = TURN_SPEED } = {}) {
   });
 
   // Turns stop firing transitionend once the book is hidden, so jump states by hand.
-  function settle(showNote) {
+  function settle(index) {
     for (const page of book.querySelectorAll(":scope > .bb-page")) page.remove();
     finish = null;
     instance.isAnimating = false;
     instance.end = false;
-    instance.currentIdx = showNote ? 1 : 0;
+    instance.currentIdx = index;
     instance.current = instance.items[instance.currentIdx];
     instance.items.forEach((element, index) => {
       element.style.display = index === instance.currentIdx ? "block" : "none";
@@ -119,7 +120,7 @@ export function createBookFlip(card, { speed = TURN_SPEED } = {}) {
   return {
     turn(entering, done) {
       if (slides(card)) {
-        settle(!entering);
+        settle(entering ? 0 : 1);
         card.dataset.turn = "slide";
         slideTurn(entering, done);
         return;
@@ -129,7 +130,7 @@ export function createBookFlip(card, { speed = TURN_SPEED } = {}) {
       card.style.opacity = "";
       card.dataset.turn = "book";
       note.replaceChildren(sheet(card, true));
-      settle(!entering);
+      settle(entering ? 0 : 1);
       // BookBlock reads its orientation only from this class, so it can change per turn.
       const horizontal = orientation(card) === "horizontal";
       book.classList.toggle("bb-horizontal", horizontal);
@@ -142,7 +143,7 @@ export function createBookFlip(card, { speed = TURN_SPEED } = {}) {
       instance.next();
     },
     settle(showNote = true) {
-      settle(showNote);
+      settle(showNote ? 1 : 0);
       stopSlide();
       card.dataset.turn = slides(card) ? "slide" : "book";
       card.style.transform = "";

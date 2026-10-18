@@ -76,6 +76,12 @@ test("notebook decorations, coherent cards, portrait and contact shortcut are ac
   assert.match(css, /\[data-turn="slide"\]\[data-motion-state\] > \.note-book\s*\{\s*display:\s*none/);
   assert.match(css, /\[data-motion-state="entering"\] > \.note-book > \.bb-page:nth-child\(2\) \.bb-back \.note-sheet > \*\s*\{\s*visibility:\s*hidden/, "Landing side stays blank until the turn completes");
   assert.doesNotMatch(css, /radial-gradient\(44px 30px/, "No dark shadow in the cut-away corner");
+  assert.match(flip, /note-blank-start[^]*note-blank-end/, "Folded halves differ for entry and exit");
+  assert.match(css, /-webkit-tap-highlight-color: transparent/, "No blue mobile tap highlight on press");
+  assert.match(css, /\.bb-vertical \.note-blank-start\s*\{\s*clip-path:\s*polygon\(50% 0/, "Entry landing half is transparent notebook");
+  assert.match(css, /\.bb-horizontal \.note-blank-start\s*\{\s*clip-path:\s*polygon\(0 50%/);
+  assert.match(css, /\.bb-page:has\(\.note-blank\) \.bb-overlay\s*\{\s*display:\s*none/, "No shade over the bare notebook");
+  assert.match(css, /\[data-turn="book"\]\[data-motion-state\]:not\(\[data-motion-state="visible"\]\)::before/, "Real note paper hides while the book turns");
   assert.doesNotMatch(css, /\[data-card\]::after\s*\{[^}]*box-shadow/, "Rectangular shadow would show through the cut-away corner");
   assert.match(css, /@keyframes pin-press/);
   assert.match(css, /\[data-motion-state="entering"\][^]*?\.note-pin/);
