@@ -69,6 +69,14 @@ test("notebook decorations, coherent cards, portrait and contact shortcut are ac
   assert.match(flip, /bb-horizontal/, "Hero notes and phones turn bottom to top");
   assert.match(flip, /closest\("\.hero"\)/);
   assert.match(flip, /max-width: 650px/);
+  assert.match(flip, /card\.id !== "contact"/, "On phones only the hero notes and contact turn like pages");
+  assert.match(flip, /SLIDE_ENTRY = 1400/);
+  assert.match(flip, /SLIDE_EXIT = 1100/);
+  assert.match(flip, /translateY\(\$\{entering \? SLIDE_TRAVEL : -SLIDE_TRAVEL\}px\)|SLIDE_TRAVEL = 80/);
+  assert.match(css, /\[data-turn="slide"\]\[data-motion-state\] > \.note-book\s*\{\s*display:\s*none/);
+  assert.match(css, /\[data-motion-state="entering"\] > \.note-book > \.bb-page:nth-child\(2\) \.bb-back \.note-sheet > \*\s*\{\s*visibility:\s*hidden/, "Landing side stays blank until the turn completes");
+  assert.doesNotMatch(css, /radial-gradient\(44px 30px/, "No dark shadow in the cut-away corner");
+  assert.doesNotMatch(css, /\[data-card\]::after\s*\{[^}]*box-shadow/, "Rectangular shadow would show through the cut-away corner");
   assert.match(css, /@keyframes pin-press/);
   assert.match(css, /\[data-motion-state="entering"\][^]*?\.note-pin/);
   assert.match(css, /\.note-pin\s*\{[^}]*pointer-events:\s*none/);

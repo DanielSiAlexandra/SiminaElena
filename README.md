@@ -93,9 +93,13 @@ BookBlock instance** (it adds a window listener per instance, so never recreate
 it) holding a blank sheet and a snapshot of the note (ids stripped, padding pinned,
 inert and `aria-hidden`). Entry turns blank → note, exit turns note → blank, both
 forward `next()` with `circular`. Section notes on wider screens turn **right to
-left** around a vertical centre spine; the two hero notes, and every note at
-≤650px, use BookBlock's horizontal mode and fold **bottom to top** around a
-horizontal spine (orientation is chosen per turn, so rotating a phone works). 1600ms ease-in-out with BookBlock's shading. Notes outside the
+left** around a vertical centre spine; the two hero notes always, and the contact
+note at ≤650px, use BookBlock's horizontal mode and fold **bottom to top**
+(orientation is chosen per turn, so rotating a phone works). On entry the back of
+the turning page is blank, so the half it lands on only shows text once the turn
+completes. At ≤650px the about, lessons and questions notes instead **slide**
+as whole notes: in from 80px below (1400ms) and out 80px upward (1100ms),
+`cubic-bezier(0.25, 0.1, 0.25, 1)`, reversing from their current position. Turns take 1600ms ease-in-out with BookBlock's shading. Notes outside the
 reading area show the blank sheet. Reversals and focus/anchor reveals settle the
 book by hand (hidden books never fire `transitionend`). Without JS or with
 reduced motion no book is created and notes are plain. The MIT notice is in

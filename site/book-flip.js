@@ -7,6 +7,15 @@ import "./vendor/bookblock/bookblock.css";
 const BookBlock = window.BookBlock;
 const TURN_SPEED = 1600;
 const phone = window.matchMedia("(max-width: 650px)");
+// On phones the middle notes slide instead: in from below, out through the top.
+const SLIDE_ENTRY = 1400;
+const SLIDE_EXIT = 1100;
+const SLIDE_TRAVEL = 80;
+const SLIDE_EASING = "cubic-bezier(0.25, 0.1, 0.25, 1)";
+
+function slides(card) {
+  return phone.matches && !card.closest(".hero") && card.id !== "contact";
+}
 
 // Hero notes and every note on phones fold their lower half up over the upper half
 // (BookBlock "horizontal"); wider section notes turn right to left around a centre spine.
@@ -38,7 +47,7 @@ function item(content) {
 }
 
 // One persistent BookBlock per note: item 1 is a blank sheet, item 2 a snapshot of the note.
-// Every turn is a forward (right-to-left) next(); circular wraps the exit back to the blank sheet.
+// Every turn is a forward next(); circular wraps the exit back to the blank sheet.
 export function createBookFlip(card, { speed = TURN_SPEED } = {}) {
   const book = document.createElement("div");
   book.className = "note-book bb-bookblock";
@@ -78,8 +87,47 @@ export function createBookFlip(card, { speed = TURN_SPEED } = {}) {
     });
   }
 
+  let slide = null;
+  function stopSlide() {
+    slide?.cancel();
+    slide = null;
+  }
+
+  function slideTurn(entering, done) {
+    const style = getComputedStyle(card);
+    const from = { transform: style.transform === "none" ? "translateY(0px)" : style.transform, opacity: style.opacity };
+    const fresh = !slide && entering;
+    stopSlide();
+    const final = entering
+      ? { transform: "translateY(0px)", opacity: 1 }
+      : { transform: `translateY(${-SLIDE_TRAVEL}px)`, opacity: 0 };
+    card.style.transform = final.transform;
+    card.style.opacity = String(final.opacity);
+    const animation = card.animate(
+      [fresh ? { transform: `translateY(${SLIDE_TRAVEL}px)`, opacity: 0 } : from, final],
+      { duration: entering ? SLIDE_ENTRY : SLIDE_EXIT, easing: SLIDE_EASING },
+    );
+    slide = animation;
+    animation.onfinish = () => {
+      if (slide !== animation) return;
+      slide = null;
+      if (entering) { card.style.transform = ""; card.style.opacity = ""; }
+      done();
+    };
+  }
+
   return {
     turn(entering, done) {
+      if (slides(card)) {
+        settle(!entering);
+        card.dataset.turn = "slide";
+        slideTurn(entering, done);
+        return;
+      }
+      stopSlide();
+      card.style.transform = "";
+      card.style.opacity = "";
+      card.dataset.turn = "book";
       note.replaceChildren(sheet(card, true));
       settle(!entering);
       // BookBlock reads its orientation only from this class, so it can change per turn.
@@ -93,6 +141,12 @@ export function createBookFlip(card, { speed = TURN_SPEED } = {}) {
       finish = done;
       instance.next();
     },
-    settle(showNote = true) { settle(showNote); },
+    settle(showNote = true) {
+      settle(showNote);
+      stopSlide();
+      card.dataset.turn = slides(card) ? "slide" : "book";
+      card.style.transform = "";
+      card.style.opacity = showNote || card.dataset.turn === "book" ? "" : "0";
+    },
   };
 }
