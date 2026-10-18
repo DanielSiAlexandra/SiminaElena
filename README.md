@@ -99,8 +99,9 @@ note at ≤650px, use BookBlock's horizontal mode and fold **bottom to top**
 (orientation is chosen per turn, so rotating a phone works). The half a note lands
 on (entry) or leaves (exit) is bare notebook: no paper colour, BookBlock shade or
 note shadow (the real note's `::before`/`::after` hide while the book turns). The
-turning page's back is blank on entry, so text only appears once the turn
-completes. At ≤650px the about, lessons and questions notes instead **slide**
+turning flap's outside is blank paper (the back of the folded note); its inside
+carries the note's text and photo as it unfolds, and on exit the folding half
+keeps its content. At ≤650px the about, lessons and questions notes instead **slide**
 as whole notes: in from 80px below (1400ms) and out 80px upward (1100ms),
 `cubic-bezier(0.25, 0.1, 0.25, 1)`, reversing from their current position. Turns take 1600ms ease-in-out with BookBlock's shading. Notes outside the
 reading area rest as the folded note. Reversals and focus/anchor reveals settle the
