@@ -22,7 +22,11 @@ test("Romanian page has landmarks, safe contact and valid navigation", async () 
   assert.match(html, /<meta name="description" content="[^"]+"/);
   assert.match(html, /De stabilit împreună/);
   assert.doesNotMatch(html, /<form[\s>]|<iframe[\s>]|onclick=|href="#"|testimoniale|70 de ani|pensionar|garantat/i);
-  for (const [, url] of html.matchAll(/(?:src|href)="(https?:[^"]+)"/g)) assert.equal(url, "https://www.facebook.com/elena.simina.58");
+  for (const [, url] of html.matchAll(/(?:src|href)="(https?:[^"]+)"/g)) assert.equal(url, "https://m.me/elena.simina.58", "Contact only via private Messenger chat");
+  assert.equal((html.match(/href="https:\/\/m\.me\/elena\.simina\.58">Scrie-mi pe Messenger/g) ?? []).length, 2);
+  assert.doesNotMatch(html, /tel:|Olga|\b0\d{9}\b/, "No phone number or private logistics");
+  for (const place of ["Cluj", "Copăceni", "Turda"]) assert.match(html, new RegExp(place));
+  assert.match(html, /săptămânale sau zilnice/);
   assert.ok((html.match(/<details[\s>]/g) ?? []).length >= 3);
 });
 
@@ -32,7 +36,7 @@ test("notebook decorations, coherent cards, portrait and contact shortcut are ac
   assert.match(html, /class="pen-rail" aria-hidden="true"/);
   assert.match(html, /<a class="contact-shortcut" href="#contact" aria-label="[^"]+"/);
   assert.doesNotMatch(html, /motion-control|motion-help|pause-icon|play-icon/);
-  assert.match(html, /src="assets\/elena-simina\.jpg" width="200" height="200" alt="Elena Simina/);
+  assert.match(html, /src="assets\/elena-simina\.jpg" width="200" height="200" alt="Elena Simina, portret, purtând o bluză verde\."/);
   assert.match(html, /<script type="module" src="main.js"/);
   const portrait = await readFile(resolve(site, "assets/elena-simina.jpg"));
   assert.equal(portrait[0], 0xff);

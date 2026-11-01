@@ -41,14 +41,15 @@ node tools/agent-toolkit/toolkit.mjs run npm run build
 
 ## Content and artwork
 
-- `site/index.html`: Romanian copy, native practical questions, Facebook contact
+- `site/index.html`: Romanian copy, native practical questions, private Messenger contact
+  (`m.me`; no phone number is shown)
   and six complete `data-card` paper panels (two hero cards and four sections).
   Animate each panel including its background, not individual text fragments;
   do not nest animated cards.
 - `site/styles.css`: paper colours, left binding, reserved right pen margin,
   responsive layout and reduced-motion rules.
-- `site/assets/elena-simina.jpg`: permission-confirmed portrait supplied by the owner;
-  200×200 pixels, deliberately displayed small rather than enlarged.
+- `site/assets/elena-simina.jpg`: portrait chosen by the owner (green top), centre-cropped
+  to 400×400 without metadata and displayed at 200×200.
 - `site/assets/pen.svg` and `handwriting.svg`: original local pen and handwritten paths.
 - `site/assets/portrait-placeholder.svg`: original notebook artwork, retained as the favicon.
 - `site/assets/patrick-hand-*.woff2`: locally hosted Patrick Hand, including Romanian
@@ -60,8 +61,11 @@ Obtain permission before replacing a photograph; do not add pupils' photos witho
 appropriate consent. Update the explicit source-asset allowlist when adding public assets.
 
 Copy reflects the family's description, not independently verified qualifications.
-Lesson activities are examples to discuss. Location, format, availability, duration
-and fees remain **De stabilit împreună** until confirmed. Do not invent reviews,
+Lesson activities are examples to discuss. Confirmed by the owner: lessons in Cluj,
+Copăceni and/or Turda (place agreed after discussing timing), weekly or daily
+(including morning homework help and supervision), mornings preferred, first contact
+privately on Messenger. Exact schedule, duration and fees remain **De stabilit
+împreună**. Keep private travel arrangements off the site. Do not invent reviews,
 results, credentials or contact details.
 
 ## Motion contract
